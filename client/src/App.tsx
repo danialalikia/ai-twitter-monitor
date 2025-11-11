@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Bookmarks from "./pages/Bookmarks";
+import ScheduledPosts from "./pages/ScheduledPosts";
 
 function Router() {
   return (
@@ -14,6 +15,7 @@ function Router() {
       <Route path={"/"} component={Dashboard} />
       <Route path={"/settings"} component={Settings} />
       <Route path={"/bookmarks"} component={Bookmarks} />
+      <Route path={"/scheduled"} component={ScheduledPosts} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

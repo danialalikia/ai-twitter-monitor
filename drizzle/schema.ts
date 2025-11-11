@@ -97,14 +97,20 @@ export const settings = mysqlTable("settings", {
   apifyToken: text("apifyToken"),
   telegramBotToken: text("telegramBotToken"),
   telegramChatId: text("telegramChatId"),
+  telegramOwnerId: varchar("telegramOwnerId", { length: 64 }), // Telegram user ID of the owner
   keywords: text("keywords").notNull(),
   scheduleTime: varchar("scheduleTime", { length: 5 }).notNull().default("08:00"),
   timezone: varchar("timezone", { length: 64 }).notNull().default("UTC"),
   maxItemsPerRun: int("maxItemsPerRun").notNull().default(200),
   
-  // AI Rewrite Settings
+  // AI Rewrite Settings (OpenRouter)
   aiRewriteEnabled: int("aiRewriteEnabled").default(0),
   aiRewritePrompt: text("aiRewritePrompt"),
+  openRouterApiKey: text("openRouterApiKey"),
+  aiModel: varchar("aiModel", { length: 100 }).default("openai/gpt-4o"),
+  temperature: varchar("temperature", { length: 10 }).default("0.7"),
+  maxTokens: int("maxTokens").default(500),
+  topP: varchar("topP", { length: 10 }).default("0.9"),
   
   // Telegram Template Settings
   telegramTemplate: text("telegramTemplate"),
@@ -172,6 +178,11 @@ export const tweets = mysqlTable("tweets", {
   authorJoinDate: text("authorJoinDate"),
   authorTweetsCount: int("authorTweetsCount").notNull().default(0),
   
+  // Tweet type flags
+  isRetweet: boolean("isRetweet").notNull().default(false),
+  retweetedAuthorHandle: varchar("retweetedAuthorHandle", { length: 255 }),
+  retweetedAuthorName: varchar("retweetedAuthorName", { length: 255 }),
+  
   // Engagement metrics
   replyCount: int("replyCount").notNull().default(0),
   retweetCount: int("retweetCount").notNull().default(0),
@@ -181,7 +192,6 @@ export const tweets = mysqlTable("tweets", {
   impressions: bigint("impressions", { mode: "number" }).default(0),
   
   // Media and references
-  // Changed from text to json to store structured media array: [{type: 'photo'|'video', url: string, thumbnail?: string}]
   mediaUrls: json("mediaUrls").$type<Array<{type: 'photo'|'video', url: string, thumbnail?: string}>>(),
   mediaType: varchar("mediaType", { length: 50 }),
   quotedStatusId: varchar("quotedStatusId", { length: 64 }),
@@ -232,3 +242,142 @@ export const bookmarks = mysqlTable("bookmarks", {
 
 export type Bookmark = typeof bookmarks.$inferSelect;
 export type InsertBookmark = typeof bookmarks.$inferInsert;
+
+/**
+ * Saved tweets table - permanent copy of bookmarked tweets
+ * This table stores the full tweet data so bookmarked tweets persist across fetches
+ */
+export const savedTweets = mysqlTable("savedTweets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Twitter core fields (copied from tweets table)
+  tweetId: varchar("tweetId", { length: 64 }).notNull(),
+  url: text("url").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("createdAt").notNull(),
+  language: varchar("language", { length: 10 }),
+  
+  // Author fields
+  authorHandle: varchar("authorHandle", { length: 255 }).notNull(),
+  authorName: varchar("authorName", { length: 255 }),
+  authorProfileUrl: text("authorProfileUrl"),
+  authorProfileImageUrl: text("authorProfileImageUrl"),
+  authorVerified: boolean("authorVerified").notNull().default(false),
+  
+  // Engagement metrics
+  likeCount: int("likeCount").notNull().default(0),
+  retweetCount: int("retweetCount").notNull().default(0),
+  replyCount: int("replyCount").notNull().default(0),
+  viewCount: bigint("viewCount", { mode: "number" }).default(0),
+  
+  // Media
+  mediaUrls: json("mediaUrls").$type<Array<{type: 'photo'|'video', url: string, thumbnail?: string}>>(),
+  mediaType: varchar("mediaType", { length: 50 }),
+  
+  // Metadata
+  categories: json("categories").$type<string[]>(),
+  trendScore: int("trendScore").default(0),
+  
+  // Retweet info
+  retweetedAuthorHandle: varchar("retweetedAuthorHandle", { length: 255 }),
+  retweetedAuthorName: varchar("retweetedAuthorName", { length: 255 }),
+  
+  // User note
+  note: text("note"),
+  
+  // Timestamps
+  savedAt: timestamp("savedAt").defaultNow().notNull(),
+});
+
+export type SavedTweet = typeof savedTweets.$inferSelect;
+export type InsertSavedTweet = typeof savedTweets.$inferInsert;
+
+/**
+ * Scheduled posts table - for automatic posting to Telegram
+ */
+export const scheduledPosts = mysqlTable("scheduledPosts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // Preset name
+  isActive: int("isActive").default(1).notNull(), // 1=active, 0=inactive
+  
+  // Schedule settings
+  scheduleType: mysqlEnum("scheduleType", ["daily", "weekly", "custom"]).notNull().default("daily"),
+  scheduleTimes: json("scheduleTimes").$type<string[]>(), // ["08:00", "14:00", "20:00"] Tehran time
+  weekDays: json("weekDays").$type<number[]>(), // [0,1,2,3,4,5,6] for weekly (0=Sunday)
+  timezone: varchar("timezone", { length: 64 }).default("Asia/Tehran").notNull(),
+  
+  // Content settings
+  postsPerRun: int("postsPerRun").default(5).notNull(),
+  sortBy: mysqlEnum("sortBy", ["trending", "likes", "retweets", "views", "latest"]).default("trending").notNull(),
+  
+  // Content mix (percentages)
+  contentMix: json("contentMix").$type<{
+    text: number;
+    images: number;
+    videos: number;
+  }>(),
+  
+  // Duplicate prevention
+  preventDuplicates: int("preventDuplicates").default(1).notNull(),
+  duplicateTimeWindow: int("duplicateTimeWindow").default(24).notNull(), // hours
+  
+  // Search filters (same as Advanced Fetch)
+  keywords: text("keywords"), // comma-separated
+  queryType: varchar("queryType", { length: 20 }).default("Latest"),
+  minLikes: int("minLikes"),
+  minRetweets: int("minRetweets"),
+  minViews: int("minViews"),
+  hasImages: int("hasImages").default(0),
+  hasVideos: int("hasVideos").default(0),
+  hasLinks: int("hasLinks").default(0),
+  verifiedOnly: int("verifiedOnly").default(0),
+  
+  // Telegram settings
+  useAiTranslation: int("useAiTranslation").default(0).notNull(),
+  telegramTemplate: text("telegramTemplate"), // Template with placeholders
+  
+  // Execution tracking
+  lastRunAt: timestamp("lastRunAt"),
+  nextRunAt: timestamp("nextRunAt"),
+  totalSent: int("totalSent").default(0).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ScheduledPost = typeof scheduledPosts.$inferSelect;
+export type InsertScheduledPost = typeof scheduledPosts.$inferInsert;
+
+/**
+ * Sent posts tracking table - stores sent tweets with full data for history
+ */
+export const sentPosts = mysqlTable("sent_posts", {
+  id: int("id").autoincrement().primaryKey(),
+  scheduleId: int("scheduleId").notNull(),
+  tweetId: varchar("tweetId", { length: 64 }).notNull(),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  
+  // Tweet data (same as tweets table)
+  url: text("url").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("createdAt").notNull(),
+  
+  // Author fields
+  authorHandle: varchar("authorHandle", { length: 255 }).notNull(),
+  authorName: varchar("authorName", { length: 255 }),
+  authorVerified: boolean("authorVerified").notNull().default(false),
+  
+  // Engagement metrics
+  likeCount: int("likeCount").notNull().default(0),
+  retweetCount: int("retweetCount").notNull().default(0),
+  replyCount: int("replyCount").notNull().default(0),
+  viewCount: bigint("viewCount", { mode: "number" }).default(0),
+  
+  // Media
+  mediaUrls: json("mediaUrls").$type<Array<{type: 'photo'|'video', url: string, thumbnail?: string}>>(),
+});
+
+export type SentPost = typeof sentPosts.$inferSelect;
+export type InsertSentPost = typeof sentPosts.$inferInsert;

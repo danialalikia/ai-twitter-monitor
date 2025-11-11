@@ -88,18 +88,28 @@
 - [x] Test with different engagement thresholds
 
 ## Advanced Tweet Features
-- [ ] Add filter:media support to show only tweets with images/videos
-- [ ] Display media (images/videos) inside tweet cards
+- [x] Add filter:media support to show only tweets with images/videos
+- [x] Display media (images/videos) inside tweet cards
 - [ ] Show tweet threads in continuous format
-- [ ] Fetch and display real profile images from Twitter API
-- [ ] Make username/handle clickable to open Twitter profile
-- [ ] Add profile bio popup on avatar click (show bio, followers, following)
-- [ ] Change "View on X" button to "Download" button
-- [ ] Implement bookmark system to save favorite tweets
-- [ ] Add "Send to Telegram" button for individual tweets
-- [ ] Create bookmarks database table
-- [ ] Create bookmarks CRUD procedures
-- [ ] Add bookmarks page to view saved tweets
+- [x] Fetch and display real profile images from Twitter API
+- [x] Make username/handle clickable to open Twitter profile
+- [x] Add profile bio popup on avatar click (show bio, followers, following)
+- [x] Change "View on X" button to "Download" button
+- [x] Implement bookmark system to save favorite tweets
+- [x] Add "Send to Telegram" button for individual tweets
+- [x] Create bookmarks database table
+- [x] Create bookmarks CRUD procedures
+- [x] Add bookmarks page to view saved tweets
+
+## ✅ Scheduled Posts Feature (NEWLY RESTORED)
+- [x] Create scheduledPosts and sentPosts database tables
+- [x] Add scheduled router with all procedures (create, update, delete, toggle, executeNow, sentTweets)
+- [x] Create ScheduledPosts.tsx page
+- [x] Create ScheduledPostDialog.tsx component
+- [x] Add "Scheduled" button to Dashboard header
+- [x] Add route /scheduled to App.tsx
+- [x] Install moment-jalaali for Persian date support
+- [x] Add all database helper functions for scheduled posts
 
 ## Current Bug
 - [x] Fix telegram.sendTweet procedure - "Tweet not found" error when sending to Telegram

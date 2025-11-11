@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
-import { Loader2, TrendingUp, Image, BarChart3, RefreshCw, Settings as SettingsIcon, Bookmark } from "lucide-react";
+import { Loader2, TrendingUp, Image, BarChart3, RefreshCw, Settings as SettingsIcon, Bookmark, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
@@ -195,6 +195,12 @@ export default function Dashboard() {
               <Link href="/bookmarks">
                 <Bookmark className="h-4 w-4 mr-2" />
                 Bookmarks
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/scheduled">
+                <Clock className="h-4 w-4 mr-2" />
+                Scheduled
               </Link>
             </Button>
             <Button

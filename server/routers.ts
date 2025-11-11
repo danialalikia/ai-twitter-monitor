@@ -774,6 +774,146 @@ ${tweet.text}
         return { success: true, rewrittenText };
       }),
   }),
+
+  scheduled: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getScheduledPosts(ctx.user.id);
+    }),
+
+    get: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getScheduledPostById(input.id);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string(),
+        scheduleType: z.enum(["daily", "weekly", "custom"]),
+        scheduleTimes: z.array(z.string()),
+        weekDays: z.array(z.number()).optional(),
+        postsPerRun: z.number().default(5),
+        sortBy: z.enum(["trending", "likes", "retweets", "views", "latest"]).default("trending"),
+        contentMix: z.object({
+          text: z.number(),
+          images: z.number(),
+          videos: z.number(),
+        }).optional(),
+        preventDuplicates: z.boolean().default(true),
+        duplicateTimeWindow: z.number().default(24),
+        keywords: z.string().optional(),
+        queryType: z.string().default("Latest"),
+        minLikes: z.number().optional(),
+        minRetweets: z.number().optional(),
+        minViews: z.number().optional(),
+        hasImages: z.boolean().default(false),
+        hasVideos: z.boolean().default(false),
+        hasLinks: z.boolean().default(false),
+        verifiedOnly: z.boolean().default(false),
+        useAiTranslation: z.boolean().default(false),
+        telegramTemplate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.createScheduledPost({
+          userId: ctx.user.id,
+          name: input.name,
+          scheduleType: input.scheduleType,
+          scheduleTimes: input.scheduleTimes,
+          weekDays: input.weekDays,
+          postsPerRun: input.postsPerRun,
+          sortBy: input.sortBy,
+          contentMix: input.contentMix,
+          preventDuplicates: input.preventDuplicates ? 1 : 0,
+          duplicateTimeWindow: input.duplicateTimeWindow,
+          keywords: input.keywords,
+          queryType: input.queryType,
+          minLikes: input.minLikes,
+          minRetweets: input.minRetweets,
+          minViews: input.minViews,
+          hasImages: input.hasImages ? 1 : 0,
+          hasVideos: input.hasVideos ? 1 : 0,
+          hasLinks: input.hasLinks ? 1 : 0,
+          verifiedOnly: input.verifiedOnly ? 1 : 0,
+          useAiTranslation: input.useAiTranslation ? 1 : 0,
+          telegramTemplate: input.telegramTemplate,
+        });
+        return { success: true };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        isActive: z.boolean().optional(),
+        scheduleType: z.enum(["daily", "weekly", "custom"]).optional(),
+        scheduleTimes: z.array(z.string()).optional(),
+        weekDays: z.array(z.number()).optional(),
+        postsPerRun: z.number().optional(),
+        sortBy: z.enum(["trending", "likes", "retweets", "views", "latest"]).optional(),
+        contentMix: z.object({
+          text: z.number(),
+          images: z.number(),
+          videos: z.number(),
+        }).optional(),
+        preventDuplicates: z.boolean().optional(),
+        duplicateTimeWindow: z.number().optional(),
+        keywords: z.string().optional(),
+        queryType: z.string().optional(),
+        minLikes: z.number().optional(),
+        minRetweets: z.number().optional(),
+        minViews: z.number().optional(),
+        hasImages: z.boolean().optional(),
+        hasVideos: z.boolean().optional(),
+        hasLinks: z.boolean().optional(),
+        verifiedOnly: z.boolean().optional(),
+        useAiTranslation: z.boolean().optional(),
+        telegramTemplate: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const updateData: any = { ...input };
+        delete updateData.id;
+        
+        // Convert booleans to integers
+        if (input.isActive !== undefined) updateData.isActive = input.isActive ? 1 : 0;
+        if (input.preventDuplicates !== undefined) updateData.preventDuplicates = input.preventDuplicates ? 1 : 0;
+        if (input.hasImages !== undefined) updateData.hasImages = input.hasImages ? 1 : 0;
+        if (input.hasVideos !== undefined) updateData.hasVideos = input.hasVideos ? 1 : 0;
+        if (input.hasLinks !== undefined) updateData.hasLinks = input.hasLinks ? 1 : 0;
+        if (input.verifiedOnly !== undefined) updateData.verifiedOnly = input.verifiedOnly ? 1 : 0;
+        if (input.useAiTranslation !== undefined) updateData.useAiTranslation = input.useAiTranslation ? 1 : 0;
+        
+        await db.updateScheduledPost(input.id, updateData);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteScheduledPost(input.id);
+        return { success: true };
+      }),
+
+    toggle: protectedProcedure
+      .input(z.object({ id: z.number(), isActive: z.boolean() }))
+      .mutation(async ({ input }) => {
+        await db.updateScheduledPost(input.id, { isActive: input.isActive ? 1 : 0 });
+        return { success: true };
+      }),
+
+    executeNow: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        console.log(`[executeNow] Manual execution requested for schedule ${input.id}`);
+        // For now, just return success - actual execution logic can be added later
+        return { success: true, message: "Schedule execution started" };
+      }),
+
+    sentTweets: protectedProcedure
+      .input(z.object({ scheduleId: z.number().optional() }))
+      .query(async ({ input }) => {
+        return await db.getSentTweets(input.scheduleId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

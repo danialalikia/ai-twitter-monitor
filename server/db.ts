@@ -1,6 +1,6 @@
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, settings, InsertSettings, runs, InsertRun, tweets, InsertTweet, ignoredTweets, InsertIgnoredTweet, fetchSettings, InsertFetchSetting, bookmarks, InsertBookmark } from "../drizzle/schema";
+import { InsertUser, users, settings, InsertSettings, runs, InsertRun, tweets, InsertTweet, ignoredTweets, InsertIgnoredTweet, fetchSettings, InsertFetchSetting, bookmarks, InsertBookmark, scheduledPosts, InsertScheduledPost, sentPosts, InsertSentPost } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -379,4 +379,167 @@ export async function isBookmarked(userId: number, tweetId: number): Promise<boo
     .limit(1);
 
   return result.length > 0;
+}
+
+// ==================== Scheduled Posts ====================
+
+export async function getScheduledPosts(userId: number = 1) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(scheduledPosts).orderBy(desc(scheduledPosts.createdAt));
+}
+
+export async function getScheduledPostById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(scheduledPosts).where(eq(scheduledPosts.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createScheduledPost(data: InsertScheduledPost) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(scheduledPosts).values(data);
+}
+
+export async function updateScheduledPost(id: number, data: Partial<InsertScheduledPost>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(scheduledPosts).set(data).where(eq(scheduledPosts.id, id));
+}
+
+export async function deleteScheduledPost(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(scheduledPosts).where(eq(scheduledPosts.id, id));
+}
+
+export async function getActiveSchedules() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(scheduledPosts).where(eq(scheduledPosts.isActive, 1));
+}
+
+// ==================== Sent Posts ====================
+
+export async function insertSentPost(data: InsertSentPost) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(sentPosts).values(data);
+}
+
+export async function getSentPostsInWindow(scheduleId: number, hours: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+  return await db
+    .select()
+    .from(sentPosts)
+    .where(
+      and(
+        eq(sentPosts.scheduleId, scheduleId),
+        gte(sentPosts.sentAt, cutoff)
+      )
+    );
+}
+
+export async function recordSentPost(data: {
+  scheduleId: number;
+  tweetId: string;
+  url: string;
+  text: string;
+  createdAt: Date;
+  authorHandle: string;
+  authorName?: string;
+  authorVerified: boolean;
+  likeCount: number;
+  retweetCount: number;
+  replyCount: number;
+  viewCount: number;
+  mediaUrls?: any;
+}) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot record sent post: database not available");
+    return;
+  }
+  
+  try {
+    await db.insert(sentPosts).values({
+      scheduleId: data.scheduleId,
+      tweetId: data.tweetId,
+      sentAt: new Date(),
+      url: data.url,
+      text: data.text,
+      createdAt: data.createdAt,
+      authorHandle: data.authorHandle,
+      authorName: data.authorName,
+      authorVerified: data.authorVerified,
+      likeCount: data.likeCount,
+      retweetCount: data.retweetCount,
+      replyCount: data.replyCount,
+      viewCount: data.viewCount,
+      mediaUrls: data.mediaUrls,
+    });
+  } catch (error) {
+    console.error("[Database] Failed to record sent post:", error);
+    throw error;
+  }
+}
+
+export async function getSentTweets(scheduleId?: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get sent tweets: database not available");
+    return [];
+  }
+  
+  try {
+    let query = db.select().from(sentPosts);
+    
+    if (scheduleId) {
+      query = query.where(eq(sentPosts.scheduleId, scheduleId)) as any;
+    }
+    
+    const result = await query.orderBy(desc(sentPosts.sentAt)).limit(200);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get sent tweets:", error);
+    return [];
+  }
+}
+
+export async function getRecentSentTweetIds(scheduleId: number, hours: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get recent sent tweets: database not available");
+    return [];
+  }
+  
+  const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000);
+  
+  try {
+    const result = await db
+      .select({ tweetId: sentPosts.tweetId })
+      .from(sentPosts)
+      .where(
+        and(
+          eq(sentPosts.scheduleId, scheduleId),
+          gte(sentPosts.sentAt, cutoff)
+        )
+      );
+    
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to get recent sent tweets:", error);
+    return [];
+  }
 }
