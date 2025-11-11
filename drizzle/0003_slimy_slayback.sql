@@ -1,0 +1,1 @@
+ALTER TABLE `tweets` ADD `authorCoverPhoto` text;

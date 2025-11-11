@@ -1,0 +1,1 @@
+ALTER TABLE `tweets` ADD `authorTweetsCount` int DEFAULT 0 NOT NULL;

@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, userId, keywords, scheduleTime, timezone, maxItemsPerRun FROM settings LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2HR4kjNebWRqJ69.root --database 2UQqxb8DT7xYmYE7i9MjmL --execute SELECT id, userId, keywords, scheduleTime, timezone, maxItemsPerRun FROM settings LIMIT 1",
+  "rows": [
+    {
+      "id": "1",
+      "userId": "1",
+      "keywords": "Ai",
+      "scheduleTime": "08:00",
+      "timezone": "UTC",
+      "maxItemsPerRun": "1000"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tkeywords\tscheduleTime\ttimezone\tmaxItemsPerRun\n1\t1\tAi\t08:00\tUTC\t1000\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}
