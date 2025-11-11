@@ -1,4 +1,4 @@
-import { eq, desc, and, inArray, gte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, settings, InsertSettings, runs, InsertRun, tweets, InsertTweet, ignoredTweets, InsertIgnoredTweet, fetchSettings, InsertFetchSetting, bookmarks, InsertBookmark, scheduledPosts, InsertScheduledPost, sentPosts, InsertSentPost } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -572,5 +572,32 @@ export async function getRecentSentTweetIds(scheduleId: number, hours: number) {
   } catch (error) {
     console.error("[Database] Failed to get recent sent tweets:", error);
     return [];
+  }
+}
+
+
+export async function clearAllSentTweets(userId: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot clear sent tweets: database not available");
+    return;
+  }
+  
+  try {
+    // Get all schedules for this user
+    const userSchedules = await db.select({ id: scheduledPosts.id }).from(scheduledPosts).where(eq(scheduledPosts.userId, userId));
+    const scheduleIds = userSchedules.map(s => s.id);
+    
+    if (scheduleIds.length > 0) {
+      // Delete all sent tweets for these schedules
+      await db.delete(sentPosts).where(
+        scheduleIds.length === 1 
+          ? eq(sentPosts.scheduleId, scheduleIds[0])
+          : sql`${sentPosts.scheduleId} IN (${sql.join(scheduleIds.map(id => sql`${id}`), sql`, `)})`
+      );
+    }
+  } catch (error) {
+    console.error("[Database] Failed to clear all sent tweets:", error);
+    throw error;
   }
 }

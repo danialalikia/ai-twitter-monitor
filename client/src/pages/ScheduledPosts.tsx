@@ -83,6 +83,16 @@ export default function ScheduledPosts() {
     },
   });
   
+  const clearAllMutation = trpc.scheduled.clearAllHistory.useMutation({
+    onSuccess: () => {
+      toast.success("تمام تاریخچه حذف شد");
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast.error(`خطا: ${error.message}`);
+    },
+  });
+  
   if (authLoading || isLoading) {
     return (
       <div className="container py-8">
@@ -363,6 +373,24 @@ export default function ScheduledPosts() {
             <div className="animate-pulse space-y-4">
               <div className="h-32 bg-muted rounded"></div>
               <div className="h-32 bg-muted rounded"></div>
+            </div>
+          )}
+          
+          {/* Clear All Button */}
+          {sentTweets && sentTweets.length > 0 && (
+            <div className="flex justify-end mb-4">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (confirm(`آیا مطمئن هستید که می‌خواهید تمام ${sentTweets.length} پست را حذف کنید؟`)) {
+                    clearAllMutation.mutate();
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                حذف کل تاریخچه
+              </Button>
             </div>
           )}
           

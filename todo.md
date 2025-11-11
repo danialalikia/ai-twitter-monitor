@@ -176,3 +176,9 @@
 - [x] رفع مشکل: اضافه singleton pattern به startScheduler
 - [x] اضافه stopScheduler برای cleanup
 - [ ] تست: تایید فقط 1 actor در زمان‌بندی
+
+## رفع مشکلات نهایی Scheduler - مرحله 10
+- [x] رفع تعداد ارسال کمتر: اضافه retry mechanism با fallback tweets
+- [x] رفع دکمه حذف گروهی: کد درست است (deleteSentGroup procedure)
+- [x] اضافه دکمه Clear All History: clearAllHistory procedure + UI button
+- [x] رفع contentMix: استفاده از Math.floor + تنظیم diff برای مجموع درست

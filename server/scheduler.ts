@@ -149,12 +149,26 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       const imageTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'image');
       const videoTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'video');
       
-      // Calculate how many of each type to send
-      const textCount = Math.round((postsPerRun * textPercent) / 100);
-      const imagesCount = Math.round((postsPerRun * imagesPercent) / 100);
-      const videosCount = Math.round((postsPerRun * videosPercent) / 100);
+      // Calculate how many of each type to send (use floor to avoid over-allocation)
+      let textCount = Math.floor((postsPerRun * textPercent) / 100);
+      let imagesCount = Math.floor((postsPerRun * imagesPercent) / 100);
+      let videosCount = Math.floor((postsPerRun * videosPercent) / 100);
       
-      console.log(`[Scheduler] ContentMix: text=${textCount}, images=${imagesCount}, videos=${videosCount}`);
+      // Adjust to ensure total equals postsPerRun
+      const total = textCount + imagesCount + videosCount;
+      if (total < postsPerRun) {
+        const diff = postsPerRun - total;
+        // Add remaining to the type with highest percentage
+        if (videosPercent >= imagesPercent && videosPercent >= textPercent) {
+          videosCount += diff;
+        } else if (imagesPercent >= textPercent) {
+          imagesCount += diff;
+        } else {
+          textCount += diff;
+        }
+      }
+      
+      console.log(`[Scheduler] ContentMix: text=${textCount}/${textTweets.length}, images=${imagesCount}/${imageTweets.length}, videos=${videosCount}/${videoTweets.length}`);
       
       // Select tweets based on contentMix
       tweetsToSend = [
@@ -169,6 +183,7 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         const usedIds = new Set(tweetsToSend.map((t: any) => t.tweetId));
         const availableTweets = filteredTweets.filter((t: any) => !usedIds.has(t.tweetId));
         tweetsToSend.push(...availableTweets.slice(0, remaining));
+        console.log(`[Scheduler] ContentMix: Added ${Math.min(remaining, availableTweets.length)} fallback tweets`);
       }
       
       // Limit to EXACTLY postsPerRun
@@ -191,7 +206,16 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
     let sentCount = 0;
     const { sendTelegramMessage, sendTelegramPhoto, sendTelegramVideo, sendTelegramMediaGroup } = await import('./telegram');
     
-    for (const tweet of tweetsToSend) {
+    // To ensure EXACTLY postsPerRun tweets are sent, we'll keep trying with remaining tweets if some fail
+    let tweetsQueue = [...tweetsToSend];
+    let attemptedIds = new Set<string>();
+    
+    while (sentCount < postsPerRun && tweetsQueue.length > 0) {
+      const tweet = tweetsQueue.shift()!;
+      
+      // Skip if already attempted
+      if (attemptedIds.has(tweet.tweetId)) continue;
+      attemptedIds.add(tweet.tweetId);
       try {
         const tweetToSend = tweet;
         const useAI = Boolean(schedule.useAiTranslation);
@@ -293,6 +317,14 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`[Scheduler] Failed to send tweet ${tweet.tweetId}:`, error);
+        // If we still need more tweets and have extras available, add them to queue
+        if (sentCount < postsPerRun && filteredTweets.length > tweetsToSend.length) {
+          const usedIds = attemptedIds;
+          const nextTweet = filteredTweets.find(t => !usedIds.has(t.tweetId));
+          if (nextTweet) {
+            tweetsQueue.push(nextTweet);
+          }
+        }
       }
     }
     

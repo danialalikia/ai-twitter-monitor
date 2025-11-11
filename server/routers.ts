@@ -968,6 +968,12 @@ ${tweet.text}
         await db.deleteSentTweetsByExecution(input.executionId);
         return { success: true };
       }),
+
+    clearAllHistory: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.clearAllSentTweets(ctx.user.id);
+        return { success: true };
+      }),
   }),
 });
 
