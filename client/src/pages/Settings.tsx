@@ -81,6 +81,8 @@ export default function Settings() {
     },
   });
 
+  const setupBotMutation = trpc.telegram.setupBot.useMutation();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate({
@@ -235,6 +237,34 @@ export default function Settings() {
                     @userinfobot
                   </a>
                   {" "}استفاده کن.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const result = await setupBotMutation.mutateAsync();
+                      toast.success(`Bot setup successful! Mini App URL: ${result.miniAppUrl}`);
+                    } catch (error) {
+                      toast.error(error instanceof Error ? error.message : "Failed to setup bot");
+                    }
+                  }}
+                  disabled={setupBotMutation.isPending || !formData.telegramBotToken}
+                  className="w-full"
+                >
+                  {setupBotMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Setting up bot...
+                    </>
+                  ) : (
+                    "🤖 Setup Telegram Mini App"
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  این دکمه bot commands و menu button را تنظیم می‌کند. بعد از کلیک، در تلگرام دکمه "Open Dashboard" را خواهید دید.
                 </p>
               </div>
 

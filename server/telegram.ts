@@ -341,3 +341,85 @@ export async function answerCallbackQuery(
     }),
   });
 }
+
+/**
+ * Set Telegram bot commands and menu button
+ */
+export async function setTelegramBotCommands(
+  botToken: string,
+  miniAppUrl: string
+): Promise<void> {
+  // Set bot commands
+  const commandsUrl = `https://api.telegram.org/bot${botToken}/setMyCommands`;
+  
+  await fetch(commandsUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      commands: [
+        {
+          command: "start",
+          description: "Start the bot and open Mini App",
+        },
+        {
+          command: "app",
+          description: "Open AI Twitter Monitor Mini App",
+        },
+      ],
+    }),
+  });
+
+  // Set menu button to open Mini App
+  const menuUrl = `https://api.telegram.org/bot${botToken}/setChatMenuButton`;
+  
+  await fetch(menuUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      menu_button: {
+        type: "web_app",
+        text: "📊 Open Dashboard",
+        web_app: {
+          url: miniAppUrl,
+        },
+      },
+    }),
+  });
+}
+
+/**
+ * Send welcome message with Mini App button
+ */
+export async function sendWelcomeMessage(
+  botToken: string,
+  chatId: string,
+  miniAppUrl: string
+): Promise<void> {
+  const message = `🤖 <b>Welcome to AI Twitter Monitor!</b>
+
+📊 Track trending AI-related posts from Twitter/X
+🤖 Automated scheduling and filtering
+📱 Manage everything from this Mini App
+
+Click the button below to get started:`;
+
+  await sendTelegramMessage(botToken, chatId, {
+    chat_id: chatId,
+    text: message,
+    parse_mode: "HTML",
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "📊 Open Dashboard",
+            url: miniAppUrl,
+          },
+        ],
+      ],
+    },
+  });
+}

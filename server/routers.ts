@@ -6,7 +6,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 import { settings as settingsTable } from "../drizzle/schema";
 import { fetchTweetsFromApify, type NormalizedTweet } from "./apify";
-import { sendDailyReport, sendErrorAlert, sendLowItemsWarning, parseTelegramCallback, answerCallbackQuery } from "./telegram";
+import { sendDailyReport, sendErrorAlert, sendLowItemsWarning, parseTelegramCallback, answerCallbackQuery, setTelegramBotCommands, sendWelcomeMessage } from "./telegram";
 
 export const appRouter = router({
   system: systemRouter,
@@ -429,6 +429,41 @@ export const appRouter = router({
     webhook: publicProcedure
       .input(z.any())
       .mutation(async ({ input }) => {
+        // Handle text commands (/start, /app)
+        if (input.message?.text) {
+          const text = input.message.text;
+          const chatId = input.message.chat?.id;
+
+          if (!chatId) {
+            return { success: false, error: "No chat ID" };
+          }
+
+          // Get settings to find bot token
+          const dbConn = await db.getDb();
+          if (!dbConn) {
+            return { success: false, error: "Database not available" };
+          }
+          const allSettings = await dbConn.select().from(settingsTable).limit(1);
+          
+          if (!allSettings || allSettings.length === 0) {
+            return { success: false, error: "No settings found" };
+          }
+
+          const userSettings = allSettings[0];
+          
+          if (!userSettings.telegramBotToken) {
+            return { success: false, error: "Telegram bot token not configured" };
+          }
+
+          const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
+
+          // Handle /start or /app commands
+          if (text === "/start" || text === "/app") {
+            await sendWelcomeMessage(userSettings.telegramBotToken, chatId.toString(), miniAppUrl);
+            return { success: true };
+          }
+        }
+
         const callback = parseTelegramCallback(input);
         
         if (!callback) {
@@ -819,6 +854,28 @@ ${tweet.text}
         }
 
         return { success: true, rewrittenText };
+      }),
+
+    setupBot: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const settings = await db.getSettings(ctx.userId);
+        
+        if (!settings || !settings.telegramBotToken) {
+          throw new Error("Telegram bot token is required");
+        }
+
+        // Get Mini App URL from environment
+        const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
+
+        // Set bot commands and menu button
+        await setTelegramBotCommands(settings.telegramBotToken, miniAppUrl);
+
+        // Send welcome message if chat ID is configured
+        if (settings.telegramChatId) {
+          await sendWelcomeMessage(settings.telegramBotToken, settings.telegramChatId, miniAppUrl);
+        }
+
+        return { success: true, miniAppUrl };
       }),
   }),
 
