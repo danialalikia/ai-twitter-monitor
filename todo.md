@@ -127,3 +127,15 @@
 - [ ] تست: هیچ duplicate ارسال نشود
 - [ ] تست: قالب تلگرام صحیح باشد (عکس با media، ویدیو با video)
 - [ ] تست: تاریخچه فقط موفق‌ها را نمایش دهد
+
+## رفع مشکلات Scheduler - مرحله 4
+- [x] رفع اجرای همزمان: اضافه in-memory lock برای جلوگیری از اجرای همزمان
+- [x] رفع maxItems actor: استفاده از schedule.maxItems (200) به جای postsPerRun*3
+- [x] رفع تعداد ارسال: slice(0, postsPerRun) درست کار می‌کند، مشکل از 3 actor همزمان بود
+- [x] رفع duplicate: preventDuplicates درست کار می‌کند، مشکل از 3 actor همزمان بود
+- [x] اضافه کردن حذف گروهی: deleteSentGroup procedure + UI button
+- [ ] تست: فقط 1 actor در هر trigger
+- [ ] تست: actor با maxItems=200 اجرا شود
+- [ ] تست: دقیقاً postsPerRun=10 ارسال شود
+- [ ] تست: هیچ duplicate ارسال نشود
+- [x] رفع خطای "caption too long": محدود کردن caption به 1024 کاراکتر

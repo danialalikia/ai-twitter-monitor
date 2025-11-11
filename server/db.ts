@@ -533,6 +533,21 @@ export async function getSentTweets(scheduleId?: number) {
   }
 }
 
+export async function deleteSentTweetsByExecution(executionId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete sent tweets: database not available");
+    return;
+  }
+  
+  try {
+    await db.delete(sentPosts).where(eq(sentPosts.executionId, executionId));
+  } catch (error) {
+    console.error("[Database] Failed to delete sent tweets by execution:", error);
+    throw error;
+  }
+}
+
 export async function getRecentSentTweetIds(scheduleId: number, hours: number) {
   const db = await getDb();
   if (!db) {

@@ -961,6 +961,13 @@ ${tweet.text}
       .query(async ({ input }) => {
         return await db.getSentTweets(input.scheduleId);
       }),
+
+    deleteSentGroup: protectedProcedure
+      .input(z.object({ executionId: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.deleteSentTweetsByExecution(input.executionId);
+        return { success: true };
+      }),
   }),
 });
 

@@ -45,8 +45,8 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       throw new Error('No keywords configured in schedule. Please add keywords in the schedule settings.');
     }
     
-    // Use schedule's postsPerRun as maxItems for actor
-    const maxItems = (schedule.postsPerRun || 10) * 3; // Fetch 3x to have buffer for filtering
+    // Use schedule's maxItems for actor (default 200)
+    const maxItems = schedule.maxItems || 200;
     
     console.log(`[Scheduler] Running actor with keywords: ${keywords.join(', ')}, maxItems: ${maxItems}`);
     
@@ -207,7 +207,19 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         const authorHandle = escapeHtml(tweetToSend.authorHandle);
         const tweetText = escapeHtml(tweetToSend.text);
         
-        const caption = `🐦 <b>${authorName}</b> (@${authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetText}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 <a href="${tweetToSend.url}">View on Twitter</a>`;
+        // Build caption (Telegram limit: 1024 characters)
+        const stats = `❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}`;
+        const link = `🔗 <a href="${tweetToSend.url}">View on Twitter</a>`;
+        const header = `🐦 <b>${authorName}</b> (@${authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n`;
+        const footer = `\n\n${stats}\n\n${link}`;
+        
+        // Calculate max text length (1024 - header - footer - safety margin)
+        const maxTextLength = 1024 - header.length - footer.length - 50;
+        const truncatedText = tweetText.length > maxTextLength 
+          ? tweetText.substring(0, maxTextLength) + '...' 
+          : tweetText;
+        
+        const caption = `${header}${truncatedText}${footer}`;
         
         // Determine send method based on media
         const mediaUrls = tweetToSend.mediaUrls || [];
@@ -333,6 +345,9 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
   }
 }
 
+// In-memory lock to prevent concurrent executions of the same schedule
+const executionLocks = new Map<number, string>(); // scheduleId -> currentMinute
+
 /**
  * Check and execute all due scheduled posts
  * This should be called periodically (e.g., every minute)
@@ -370,6 +385,13 @@ export async function checkAndExecuteSchedules() {
           // Only execute if current time exactly matches schedule time (HH:MM)
           if (time !== currentTime) return false;
           
+          // Check in-memory lock first (prevents multiple executions in same minute)
+          const lockedMinute = executionLocks.get(schedule.id);
+          if (lockedMinute === currentTime) {
+            console.log(`[Scheduler] Schedule ${schedule.id} locked for ${currentTime}, skipping`);
+            return false;
+          }
+          
           // Check if already executed in the same minute to prevent duplicates
           if (lastExecutionTime) {
             const lastExecutionMinute = lastExecutionTime.format('HH:mm');
@@ -395,7 +417,14 @@ export async function checkAndExecuteSchedules() {
         
         if (shouldExecute) {
           console.log(`[Scheduler] Executing schedule ${schedule.id} at ${currentTime}`);
-          await executeScheduledPost(schedule.id, schedule.userId);
+          // Set lock before execution
+          executionLocks.set(schedule.id, currentTime);
+          try {
+            await executeScheduledPost(schedule.id, schedule.userId);
+          } finally {
+            // Keep lock for this minute (will be cleared when minute changes)
+            // No need to clear immediately
+          }
         }
       } catch (error) {
         console.error(`[Scheduler] Error checking schedule ${schedule.id}:`, error);

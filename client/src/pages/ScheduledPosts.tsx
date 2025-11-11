@@ -71,6 +71,17 @@ export default function ScheduledPosts() {
       toast.error(`خطا: ${error.message}`, { id: `execute-${variables.id}` });
     },
   });
+
+  const deleteGroupMutation = trpc.scheduled.deleteSentGroup.useMutation({
+    onSuccess: () => {
+      toast.success("گروه حذف شد");
+      // Refetch sent tweets to update history
+      window.location.reload();
+    },
+    onError: (error) => {
+      toast.error(`خطا: ${error.message}`);
+    },
+  });
   
   if (authLoading || isLoading) {
     return (
@@ -382,12 +393,12 @@ export default function ScheduledPosts() {
                 
                 return (
                   <Card key={executionId}>
-                    <CardHeader className="cursor-pointer" onClick={() => {
-                      const el = document.getElementById(`exec-${executionId}`);
-                      if (el) el.classList.toggle('hidden');
-                    }}>
+                    <CardHeader>
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1 cursor-pointer" onClick={() => {
+                          const el = document.getElementById(`exec-${executionId}`);
+                          if (el) el.classList.toggle('hidden');
+                        }}>
                           <CardTitle className="text-lg">
                             {sentTime} - {tweets.length} پست ارسال شد
                           </CardTitle>
@@ -395,7 +406,20 @@ export default function ScheduledPosts() {
                             کلیک کنید برای مشاهده جزئیات
                           </CardDescription>
                         </div>
-                        <Badge variant="secondary">{tweets.length}</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">{tweets.length}</Badge>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`آیا مطمئن هستید که می‌خواهید ${tweets.length} پست این گروه را حذف کنید؟`)) {
+                                deleteGroupMutation.mutate({ executionId });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent id={`exec-${executionId}`} className="hidden space-y-4">
