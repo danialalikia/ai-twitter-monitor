@@ -99,3 +99,10 @@
 - [x] رفع نوع ارسال تلگرام: عکس با sendPhoto+caption، ویدیو با sendVideo، گروه با sendMediaGroup
 - [x] تغییر ساعت پیشفرض scheduleTimes به getCurrentTime() (زمان فعلی)
 - [ ] تست و تایید: تعداد دقیق + contentMix + نوع ارسال صحیح
+
+## رفع مشکل Scheduler Execution
+- [x] بررسی لاگ‌ها: خطا "No keywords configured in fetch settings"
+- [x] مشکل: scheduler از fetchSettings می‌خواند به جای schedule.keywords
+- [x] رفع: تغییر به schedule.keywords
+- [ ] تست manual execution
+- [ ] تست automatic execution در زمان مشخص

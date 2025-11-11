@@ -33,19 +33,12 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       throw new Error('Apify token not configured');
     }
     
-    // Get fetch settings to know what keywords to search
-    const fetchSettingsList = await db.getFetchSettings(userId);
-    if (fetchSettingsList.length === 0) {
-      throw new Error('No fetch settings found');
-    }
-    
-    // Use the first fetch setting
-    const activeFetchSetting = fetchSettingsList[0];
-    const keywordsStr = activeFetchSetting.twitterContent || activeFetchSetting.searchTerms || '';
+    // Get keywords from schedule settings
+    const keywordsStr = schedule.keywords || '';
     const keywords = keywordsStr.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
     
     if (keywords.length === 0) {
-      throw new Error('No keywords configured in fetch settings');
+      throw new Error('No keywords configured in schedule. Please add keywords in the schedule settings.');
     }
     
     // Use schedule's postsPerRun as maxItems for actor
