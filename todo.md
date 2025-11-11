@@ -219,3 +219,17 @@
 - [x] تغییر miniAppUrl در routers.ts به production URL
 - [ ] تست Setup Bot با production URL
 - [ ] تست باز شدن Mini App از تلگرام با production URL
+
+# Production URL 404 Issue
+
+- [ ] بررسی وضعیت publish در Manus
+- [ ] تست production URL: https://aitwittermonitor-2uqaxb8d.manus.space
+- [ ] بررسی domain configuration
+- [ ] رفع 404 error
+
+# Switch to Manus OAuth for Mini App
+
+- [x] تغییر TelegramLogin page به Manus OAuth
+- [x] حذف Google OAuth button
+- [x] اضافه Manus OAuth button
+- [ ] تست login با Manus OAuth
