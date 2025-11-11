@@ -157,22 +157,21 @@ export default function Dashboard() {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-foreground">{APP_TITLE}</h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               onClick={handleFetchNow}
               disabled={isFetching || !isApifyConfigured}
-              variant="default"
-              title={!isApifyConfigured ? "Configure Apify token in Settings first" : ""}
+              size="sm"
             >
               {isFetching ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Fetching...
+                  <span className="hidden sm:inline">Fetching...</span>
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Fetch Now
+                  <RefreshCw className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Fetch Now</span>
                 </>
               )}
             </Button>
@@ -180,27 +179,28 @@ export default function Dashboard() {
               onClick={() => sendReportMutation.mutate({})}
               disabled={sendReportMutation.isPending || !tweets || tweets.length === 0 || !isTelegramConfigured}
               variant="outline"
+              size="sm"
               title={!isTelegramConfigured ? "Configure Telegram bot in Settings first" : ""}
             >
               {sendReportMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Sending...
+                  <span className="hidden sm:inline">Sending...</span>
                 </>
               ) : (
-                "Send Telegram Report"
+                <span className="hidden sm:inline">Send Telegram Report</span>
               )}
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link href="/bookmarks">
-                <Bookmark className="h-4 w-4 mr-2" />
-                Bookmarks
+                <Bookmark className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Bookmarks</span>
               </Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link href="/scheduled">
-                <Clock className="h-4 w-4 mr-2" />
-                Scheduled
+                <Clock className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Scheduled</span>
               </Link>
             </Button>
             <Button
@@ -211,21 +211,22 @@ export default function Dashboard() {
               }}
               disabled={deleteAllMutation.isPending || !tweets || tweets.length === 0}
               variant="outline"
+              size="sm"
               className="text-red-500 hover:text-red-600"
             >
               {deleteAllMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Clearing...
+                  <span className="hidden sm:inline">Clearing...</span>
                 </>
               ) : (
-                "Clear All Tweets"
+                <span className="hidden sm:inline">Clear All Tweets</span>
               )}
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="sm">
               <Link href="/settings">
-                <SettingsIcon className="h-4 w-4 mr-2" />
-                Settings
+                <SettingsIcon className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Settings</span>
               </Link>
             </Button>
           </div>
@@ -289,7 +290,7 @@ export default function Dashboard() {
                 <CardTitle className="text-foreground">Latest Tweets</CardTitle>
                 <CardDescription>AI-related trending posts from Twitter/X</CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">مرتب‌سازی:</span>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-[180px]">

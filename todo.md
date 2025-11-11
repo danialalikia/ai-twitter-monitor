@@ -427,9 +427,8 @@
 - [x] کپی کردن تنظیمات responsive از پروژه قبلی
 - [x] تست و رفع مشکل عرض‌ها
 
-## رفع تفاوت‌های Spacing و Sizing
-- [ ] مقایسه Dashboard.tsx قبلی و فعلی
-- [ ] مقایسه TweetCard.tsx قبلی و فعلی
-- [ ] کپی دقیق button sizes و spacing از پروژه قبلی
-- [ ] کپی دقیق card padding و margins از پروژه قبلی
-- [ ] تست responsive بودن
+## ریسپانسیو کردن Dashboard Header
+- [x] بررسی header فعلی
+- [x] اضافه کردن responsive classes برای دکمه‌ها
+- [x] مخفی کردن text دکمه‌ها در موبایل (فقط آیکون)
+- [x] تست در سایزهای مختلف
