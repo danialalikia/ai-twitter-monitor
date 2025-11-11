@@ -561,3 +561,9 @@
 - [x] رفع مشکل template placeholder - مشکل از خالی بودن telegramTemplate بود - اصلاح شد
 - [x] حذف فقط لینک آخر t.co (لینک خود توییت) - لینک‌های داخل متن حفظ می‌شوند
 - [ ] تست ارسال به تلگرام بعد از رفع
+
+## Bug: AI Not Being Called
+- [x] بررسی ai-rewrite.ts برای یافتن مشکل - از invokeLLM استفاده می‌کرد به جای OpenRouter
+- [x] جایگزینی با rewriteTweetWithOpenRouter که مستقیماً با OpenRouter API کار می‌کند
+- [x] رفع مشکل که AI اصلاً صدا زده نمی‌شود - اصلاح شد
+- [ ] تست Send with AI بعد از رفع

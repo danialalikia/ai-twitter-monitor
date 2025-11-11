@@ -675,7 +675,7 @@ ${tweet.text}
         }
 
         // Import AI rewrite helper
-        const { rewriteTweetWithAI } = await import("./lib/ai-rewrite");
+        const { rewriteTweetWithOpenRouter } = await import("./lib/ai-rewrite");
         const { buildTelegramMessage, getDefaultTelegramTemplate } = await import("./lib/telegram-template");
 
         // Remove only the last t.co link (which is usually the tweet's own URL added by Apify)
@@ -693,10 +693,22 @@ ${tweet.text}
         
         cleanText = cleanText.replace(/\s+/g, " ").trim();
 
-        // Rewrite tweet with AI
-        const rewrittenText = await rewriteTweetWithAI(
+        // Check OpenRouter API key
+        if (!settings.openRouterApiKey || !settings.openRouterApiKey.trim()) {
+          throw new Error("OpenRouter API key is not configured. Please add it in settings.");
+        }
+
+        // Rewrite tweet with AI using OpenRouter
+        const rewrittenText = await rewriteTweetWithOpenRouter(
           cleanText,
-          settings.aiRewritePrompt
+          settings.aiRewritePrompt,
+          {
+            apiKey: settings.openRouterApiKey,
+            model: settings.aiModel || 'openai/gpt-4o',
+            temperature: Number(settings.temperature) || 0.7,
+            maxTokens: Number(settings.maxTokens) || 500,
+            topP: Number(settings.topP) || 0.9,
+          }
         );
 
         // Build message from template (use default if empty or null)
