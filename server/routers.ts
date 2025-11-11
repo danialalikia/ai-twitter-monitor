@@ -895,6 +895,21 @@ ${tweet.text}
         // Get Mini App URL from environment
         const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
 
+        // Set webhook URL
+        const webhookUrl = `${miniAppUrl}/api/trpc/telegram.webhook`;
+        const setWebhookResponse = await fetch(
+          `https://api.telegram.org/bot${settings.telegramBotToken}/setWebhook`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: webhookUrl }),
+          }
+        );
+        const webhookResult = await setWebhookResponse.json();
+        if (!webhookResult.ok) {
+          throw new Error(`Failed to set webhook: ${webhookResult.description}`);
+        }
+
         // Set bot commands and menu button
         await setTelegramBotCommands(settings.telegramBotToken, miniAppUrl);
 
