@@ -195,16 +195,19 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         const tweetToSend = tweet;
         const useAI = Boolean(schedule.useAiTranslation);
         
-        // Build caption/message (escape Markdown special characters)
-        const escapeMarkdown = (text: string) => {
-          return text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+        // Build caption/message (HTML format like Send Telegram Report)
+        const escapeHtml = (text: string) => {
+          return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
         };
         
-        const authorName = escapeMarkdown(tweetToSend.authorName || tweetToSend.authorHandle);
-        const authorHandle = escapeMarkdown(tweetToSend.authorHandle);
-        const tweetText = escapeMarkdown(tweetToSend.text);
+        const authorName = escapeHtml(tweetToSend.authorName || tweetToSend.authorHandle);
+        const authorHandle = escapeHtml(tweetToSend.authorHandle);
+        const tweetText = escapeHtml(tweetToSend.text);
         
-        const caption = `🐦 *${authorName}* (@${authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetText}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 ${tweetToSend.url}`;
+        const caption = `🐦 <b>${authorName}</b> (@${authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetText}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 <a href="${tweetToSend.url}">View on Twitter</a>`;
         
         // Determine send method based on media
         const mediaUrls = tweetToSend.mediaUrls || [];
@@ -214,7 +217,7 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
           await sendTelegramMessage(settings.telegramBotToken, settings.telegramChatId, {
             chat_id: settings.telegramChatId,
             text: caption,
-            parse_mode: "Markdown",
+            parse_mode: "HTML",
           });
         } else if (mediaUrls.length === 1) {
           // Single media - send as photo or video with caption
@@ -226,20 +229,20 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
             await sendTelegramVideo(settings.telegramBotToken, settings.telegramChatId, {
               video: mediaUrl,
               caption,
-              parse_mode: "Markdown",
+              parse_mode: "HTML",
             });
           } else {
             // Default to photo
             await sendTelegramPhoto(settings.telegramBotToken, settings.telegramChatId, {
               photo: mediaUrl,
               caption,
-              parse_mode: "Markdown",
+              parse_mode: "HTML",
             });
           }
         } else {
           // Multiple media - send as media group
-          // Note: Telegram media group doesn't support parse_mode in caption
-          const plainCaption = caption.replace(/\*/g, '').replace(/\\/g, '');
+          // Note: Telegram media group doesn't support parse_mode, strip HTML tags
+          const plainCaption = caption.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
           const media = mediaUrls.map((item: any, index: number) => {
             const url = typeof item === 'string' ? item : item.url;
             const type = typeof item === 'string' ? (tweetToSend.mediaType === 'video' ? 'video' as const : 'photo' as const) : item.type;
@@ -367,11 +370,11 @@ export async function checkAndExecuteSchedules() {
           // Only execute if current time exactly matches schedule time (HH:MM)
           if (time !== currentTime) return false;
           
-          // Check if already executed in the last 2 minutes to prevent duplicates
+          // Check if already executed in the same minute to prevent duplicates
           if (lastExecutionTime) {
-            const minutesSinceLastExecution = now.diff(lastExecutionTime, 'minutes');
-            if (minutesSinceLastExecution < 2) {
-              console.log(`[Scheduler] Schedule ${schedule.id} executed ${minutesSinceLastExecution} minutes ago, skipping`);
+            const lastExecutionMinute = lastExecutionTime.format('HH:mm');
+            if (lastExecutionMinute === currentTime) {
+              console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${currentTime}, skipping`);
               return false;
             }
           }
