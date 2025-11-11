@@ -462,6 +462,34 @@ export const appRouter = router({
             await sendWelcomeMessage(userSettings.telegramBotToken, chatId.toString(), miniAppUrl);
             return { success: true };
           }
+
+          // Handle Twitter/X URL
+          const twitterUrlRegex = /https?:\/\/(twitter\.com|x\.com)\/\w+\/status\/(\d+)/i;
+          const match = text.match(twitterUrlRegex);
+          if (match) {
+            const tweetUrl = text.trim();
+            const { handleTweetUrl } = await import("./lib/handle-tweet-url");
+            await handleTweetUrl(
+              tweetUrl,
+              userSettings.telegramBotToken,
+              chatId.toString(),
+              {
+                apifyToken: userSettings.apifyToken,
+                openRouterApiKey: userSettings.openRouterApiKey,
+                aiRewritePrompt: userSettings.aiRewritePrompt,
+                aiModel: userSettings.aiModel,
+                aiTemperature: parseFloat(userSettings.temperature || "0.7"),
+                aiMaxTokens: userSettings.maxTokens || 500,
+                aiTopP: parseFloat(userSettings.topP || "0.9"),
+                telegramTemplate: userSettings.telegramTemplate,
+                includeStats: Boolean(userSettings.includeStats),
+                includeLink: Boolean(userSettings.includeLink),
+                includeAuthor: Boolean(userSettings.includeAuthor),
+                includeDate: Boolean(userSettings.includeDate),
+              }
+            );
+            return { success: true };
+          }
         }
 
         const callback = parseTelegramCallback(input);

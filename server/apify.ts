@@ -326,7 +326,7 @@ function extractJobTitle(bio: string | null | undefined): string | null {
  * Normalize Apify actor output to our schema
  * The actor already returns normalized data, so this is mostly type conversion
  */
-function normalizeTweet(raw: ApifyTweetData): NormalizedTweet | null {
+export function normalizeTweet(raw: ApifyTweetData): NormalizedTweet | null {
   try {
     // Skip if missing essential fields
     if (!raw.id || !raw.url || !raw.text) {

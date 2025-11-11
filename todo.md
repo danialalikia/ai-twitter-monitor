@@ -240,3 +240,19 @@
 - [x] اضافه authorBio به tweets schema (قبلاً اضافه شده)
 - [x] نمایش bio در TweetCard زیر نام کاربر
 - [ ] تست با tweets موجود
+
+# Display Job Title in HoverCard
+
+- [ ] بررسی authorJobTitle در database
+- [ ] بررسی نمایش Job Title در HoverCard
+- [ ] تست با tweets موجود
+- [ ] اگر Job Title خالی بود، بررسی استخراج از bio
+
+# Tweet URL to Telegram Bot Feature
+
+- [ ] اضافه Twitter URL detection به telegram webhook
+- [ ] فچ single tweet از Apify با URL
+- [ ] Rewrite متن با AI طبق template
+- [ ] دانلود media (images/videos)
+- [ ] ارسال به تلگرام با media
+- [ ] تست با لینک های مختلف

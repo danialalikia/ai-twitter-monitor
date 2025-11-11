@@ -1,0 +1,62 @@
+{
+  "query": "SELECT authorHandle, authorJobTitle, authorDescription FROM tweets ORDER BY id DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2HR4kjNebWRqJ69.root --database 2UQqxb8DT7xYmYE7i9MjmL --execute SELECT authorHandle, authorJobTitle, authorDescription FROM tweets ORDER BY id DESC LIMIT 10",
+  "rows": [
+    {
+      "authorHandle": "TheAIColony",
+      "authorJobTitle": "NULL",
+      "authorDescription": "Home of everything AI — Here to help you use Al to boost your productivity — Daily insights on AI tools & tips || DM for collaborations hello@theaicolony.com"
+    },
+    {
+      "authorHandle": "SIXR_cricket",
+      "authorJobTitle": "Challenge legends, build your legacy. | By the team of",
+      "authorDescription": "Challenge legends, build your legacy. | By the team of https://t.co/9prVQm0cfv"
+    },
+    {
+      "authorHandle": "EHuanglu",
+      "authorJobTitle": "NULL",
+      "authorDescription": "Film director | AI Consultant | Partner with https://t.co/Vn9g3Z63CI Paris | Sharing practical ways to use AI for you and your business. All views are my own."
+    },
+    {
+      "authorHandle": "nearlydaniel",
+      "authorJobTitle": "NULL",
+      "authorDescription": "seeking to accelerate humanity @xAI. prev: head of AI @harvey__AI, @tesla_AI Autopilot. left handed. walkable neighborhood appreciator. pro family."
+    },
+    {
+      "authorHandle": "MattWalshBlog",
+      "authorJobTitle": "Theocratic fascist, bestselling children’s author, world renowned DEI consultant",
+      "authorDescription": "Theocratic fascist, bestselling children’s author, world renowned DEI consultant"
+    },
+    {
+      "authorHandle": "Fetch_ai",
+      "authorJobTitle": "Try ASI One: World’s First Web3 LLM -",
+      "authorDescription": "Try ASI One: World’s First Web3 LLM - https://t.co/aluyOJDcww "
+    },
+    {
+      "authorHandle": "luckylovesgaty",
+      "authorJobTitle": "NULL",
+      "authorDescription": "| hy/hym, no they/them | genderfluid | 14 | @cl0verexists @snowball_bfb ily!!! /qp | @SHITFUCK42068 ilysm!! /r 💙 | sharing victim ava 🩶 and gaty 💜 riako |"
+    },
+    {
+      "authorHandle": "stardewy_",
+      "authorJobTitle": "yee (and also haw)",
+      "authorDescription": "yee (and also haw)"
+    },
+    {
+      "authorHandle": "DarkPLUNKI3",
+      "authorJobTitle": "NULL",
+      "authorDescription": "“And I give unto them eternal life; and they shall never perish, neither shall any man pluck them out of my hand.” John 10:28 KJV"
+    },
+    {
+      "authorHandle": "Rivalz_AI",
+      "authorJobTitle": "NULL",
+      "authorDescription": "Connectivity Layer for AI and Agents. Live - AI Oracles / Swarm Platform / Enterprise Agentic Systems. Powered by $RIZ."
+    }
+  ],
+  "messages": [
+    "Founding member of the @ASI_Alliance"
+  ],
+  "stdout": "authorHandle\tauthorJobTitle\tauthorDescription\nTheAIColony\tNULL\tHome of everything AI — Here to help you use Al to boost your productivity — Daily insights on AI tools & tips || DM for collaborations hello@theaicolony.com\nSIXR_cricket\tChallenge legends, build your legacy. | By the team of\tChallenge legends, build your legacy. | By the team of https://t.co/9prVQm0cfv\nEHuanglu\tNULL\tFilm director | AI Consultant | Partner with https://t.co/Vn9g3Z63CI Paris | Sharing practical ways to use AI for you and your business. All views are my own.\nnearlydaniel\tNULL\tseeking to accelerate humanity @xAI. prev: head of AI @harvey__AI, @tesla_AI Autopilot. left handed. walkable neighborhood appreciator. pro family.\nMattWalshBlog\tTheocratic fascist, bestselling children’s author, world renowned DEI consultant\tTheocratic fascist, bestselling children’s author, world renowned DEI consultant\nFetch_ai\tTry ASI One: World’s First Web3 LLM -\tTry ASI One: World’s First Web3 LLM - https://t.co/aluyOJDcww \n\nFounding member of the @ASI_Alliance\nluckylovesgaty\tNULL\t| hy/hym, no they/them | genderfluid | 14 | @cl0verexists @snowball_bfb ily!!! /qp | @SHITFUCK42068 ilysm!! /r 💙 | sharing victim ava 🩶 and gaty 💜 riako |\nstardewy_\tyee (and also haw)\tyee (and also haw)\nDarkPLUNKI3\tNULL\t“And I give unto them eternal life; and they shall never perish, neither shall any man pluck them out of my hand.” John 10:28 KJV\nRivalz_AI\tNULL\tConnectivity Layer for AI and Agents. Live - AI Oracles / Swarm Platform / Enterprise Agentic Systems. Powered by $RIZ.\n",
+  "stderr": "",
+  "execution_time_ms": 110
+}
