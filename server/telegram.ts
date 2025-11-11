@@ -19,7 +19,6 @@ interface TelegramMessage {
 }
 
 interface TelegramPhoto {
-  chat_id: string;
   photo: string;
   caption?: string;
   parse_mode?: "Markdown" | "HTML";
@@ -76,6 +75,60 @@ export async function sendTelegramPhoto(
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to send Telegram photo: ${error}`);
+  }
+}
+
+/**
+ * Send a video via Telegram bot
+ */
+export async function sendTelegramVideo(
+  botToken: string,
+  chatId: string,
+  video: { video: string; caption?: string; parse_mode?: "Markdown" | "HTML" }
+): Promise<void> {
+  const url = `https://api.telegram.org/bot${botToken}/sendVideo`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...video,
+      chat_id: chatId,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to send Telegram video: ${error}`);
+  }
+}
+
+/**
+ * Send a media group (multiple photos/videos) via Telegram bot
+ */
+export async function sendTelegramMediaGroup(
+  botToken: string,
+  chatId: string,
+  media: Array<{ type: "photo" | "video"; media: string; caption?: string; parse_mode?: "Markdown" | "HTML" }>
+): Promise<void> {
+  const url = `https://api.telegram.org/bot${botToken}/sendMediaGroup`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      media,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to send Telegram media group: ${error}`);
   }
 }
 
@@ -151,7 +204,6 @@ export async function sendDailyReport(
         
         if (firstMedia.type === 'photo') {
           await sendTelegramPhoto(botToken, chatId, {
-            chat_id: chatId,
             photo: firstMedia.url,
             caption,
           });

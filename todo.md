@@ -92,3 +92,10 @@
 - [x] به‌روزرسانی fetchTweetsFromApify برای استفاده از فیلترهای جدید
 - [x] به‌روزرسانی scheduler.ts برای ارسال تمام فیلترها به actor
 - [ ] تست و تایید: فیلترهای پیشرفته در schedule کار کنند
+
+## رفع مشکلات Scheduler - مرحله 2
+- [x] رفع مشکل تعداد ارسال: slice(0, postsPerRun) بعد از contentMix
+- [x] رعایت contentMix: جداسازی text/image/video و انتخاب بر اساس درصد
+- [x] رفع نوع ارسال تلگرام: عکس با sendPhoto+caption، ویدیو با sendVideo، گروه با sendMediaGroup
+- [x] تغییر ساعت پیشفرض scheduleTimes به getCurrentTime() (زمان فعلی)
+- [ ] تست و تایید: تعداد دقیق + contentMix + نوع ارسال صحیح

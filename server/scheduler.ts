@@ -139,9 +139,46 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       filteredTweets = filteredTweets.filter((tweet: any) => !recentSentIds.includes(tweet.tweetId));
     }
     
-    // Limit to EXACTLY postsPerRun
+    // Apply contentMix if specified
+    let tweetsToSend: any[] = [];
     const postsPerRun = schedule.postsPerRun || 10;
-    const tweetsToSend = filteredTweets.slice(0, postsPerRun);
+    
+    if (schedule.contentMix) {
+      const { text: textPercent, images: imagesPercent, videos: videosPercent } = schedule.contentMix;
+      
+      // Separate tweets by type
+      const textTweets = filteredTweets.filter((t: any) => !t.mediaUrls || t.mediaUrls.length === 0);
+      const imageTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'image');
+      const videoTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'video');
+      
+      // Calculate how many of each type to send
+      const textCount = Math.round((postsPerRun * textPercent) / 100);
+      const imagesCount = Math.round((postsPerRun * imagesPercent) / 100);
+      const videosCount = Math.round((postsPerRun * videosPercent) / 100);
+      
+      console.log(`[Scheduler] ContentMix: text=${textCount}, images=${imagesCount}, videos=${videosCount}`);
+      
+      // Select tweets based on contentMix
+      tweetsToSend = [
+        ...textTweets.slice(0, textCount),
+        ...imageTweets.slice(0, imagesCount),
+        ...videoTweets.slice(0, videosCount),
+      ];
+      
+      // If we don't have enough tweets of a specific type, fill with any available
+      if (tweetsToSend.length < postsPerRun) {
+        const remaining = postsPerRun - tweetsToSend.length;
+        const usedIds = new Set(tweetsToSend.map((t: any) => t.tweetId));
+        const availableTweets = filteredTweets.filter((t: any) => !usedIds.has(t.tweetId));
+        tweetsToSend.push(...availableTweets.slice(0, remaining));
+      }
+      
+      // Limit to EXACTLY postsPerRun
+      tweetsToSend = tweetsToSend.slice(0, postsPerRun);
+    } else {
+      // No contentMix specified, just take first postsPerRun tweets
+      tweetsToSend = filteredTweets.slice(0, postsPerRun);
+    }
     
     console.log(`[Scheduler] Will send exactly ${tweetsToSend.length} tweets (postsPerRun: ${postsPerRun})`);
     
@@ -154,29 +191,55 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
     
     // Send tweets to Telegram
     let sentCount = 0;
+    const { sendTelegramMessage, sendTelegramPhoto, sendTelegramVideo, sendTelegramMediaGroup } = await import('./telegram');
+    
     for (const tweet of tweetsToSend) {
       try {
-        // Import the router to call the procedure
-        // We'll use direct database and telegram API calls instead
         const tweetToSend = tweet;
         const useAI = Boolean(schedule.useAiTranslation);
         
-        // Build telegram message (simplified version)
-        let message = `🐦 **${tweetToSend.authorName || tweetToSend.authorHandle}** (@${tweetToSend.authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetToSend.text}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 ${tweetToSend.url}`;
+        // Build caption/message
+        const caption = `🐦 **${tweetToSend.authorName || tweetToSend.authorHandle}** (@${tweetToSend.authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetToSend.text}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 ${tweetToSend.url}`;
         
-        // Send to Telegram
-        const response = await fetch(`https://api.telegram.org/bot${settings.telegramBotToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        // Determine send method based on media
+        const mediaUrls = tweetToSend.mediaUrls || [];
+        
+        if (mediaUrls.length === 0) {
+          // Text only - send as message
+          await sendTelegramMessage(settings.telegramBotToken, settings.telegramChatId, {
             chat_id: settings.telegramChatId,
-            text: message,
-            disable_web_page_preview: false,
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Telegram API error: ${response.statusText}`);
+            text: caption,
+            parse_mode: "Markdown",
+          });
+        } else if (mediaUrls.length === 1) {
+          // Single media - send as photo or video with caption
+          const mediaUrl = mediaUrls[0];
+          const mediaType = tweetToSend.mediaType;
+          
+          if (mediaType === 'video') {
+            await sendTelegramVideo(settings.telegramBotToken, settings.telegramChatId, {
+              video: mediaUrl,
+              caption,
+              parse_mode: "Markdown",
+            });
+          } else {
+            // Default to photo
+            await sendTelegramPhoto(settings.telegramBotToken, settings.telegramChatId, {
+              photo: mediaUrl,
+              caption,
+              parse_mode: "Markdown",
+            });
+          }
+        } else {
+          // Multiple media - send as media group
+          const media = mediaUrls.map((url: string, index: number) => ({
+            type: tweetToSend.mediaType === 'video' ? 'video' as const : 'photo' as const,
+            media: url,
+            caption: index === 0 ? caption : undefined, // Only first item gets caption
+            parse_mode: index === 0 ? "Markdown" as const : undefined,
+          }));
+          
+          await sendTelegramMediaGroup(settings.telegramBotToken, settings.telegramChatId, media);
         }
         
         // Record sent post

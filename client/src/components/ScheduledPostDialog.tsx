@@ -30,10 +30,18 @@ const defaultTemplate = `🔥 پست ترند روز
 🔗 {url}`;
 
 export function ScheduledPostDialog({ open, onOpenChange, schedule, onSuccess }: ScheduledPostDialogProps) {
+  // Get current time in HH:MM format (Tehran timezone)
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+  
   const [name, setName] = useState("");
   const [scheduleType, setScheduleType] = useState<"daily" | "weekly" | "custom">("daily");
-  const [scheduleTimes, setScheduleTimes] = useState<string[]>(["08:00"]);
-  const [newTime, setNewTime] = useState("12:00");
+  const [scheduleTimes, setScheduleTimes] = useState<string[]>(() => [getCurrentTime()]);
+  const [newTime, setNewTime] = useState(() => getCurrentTime());
   const [weekDays, setWeekDays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri
   const [postsPerRun, setPostsPerRun] = useState(5);
   const [sortBy, setSortBy] = useState<"trending" | "likes" | "retweets" | "views" | "latest">("trending");
