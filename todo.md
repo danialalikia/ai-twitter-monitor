@@ -182,3 +182,9 @@
 - [x] رفع دکمه حذف گروهی: کد درست است (deleteSentGroup procedure)
 - [x] اضافه دکمه Clear All History: clearAllHistory procedure + UI button
 - [x] رفع contentMix: استفاده از Math.floor + تنظیم diff برای مجموع درست
+
+## رفع مشکلات واقعی Scheduler - مرحله 11 (گزارش کاربر)
+- [x] بررسی لاگ‌ها: video URL invalid باعث fail می‌شود
+- [x] بررسی contentMix: مشکل در filter - استفاده از t.mediaType به جای mediaUrls[0].type
+- [x] رفع retry mechanism: استفاده از nextTweetIndex برای track کردن fallback tweets
+- [x] رفع contentMix logic: تغییر filter به mediaUrls[0].type === 'photo'|'video'

@@ -146,8 +146,15 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       
       // Separate tweets by type
       const textTweets = filteredTweets.filter((t: any) => !t.mediaUrls || t.mediaUrls.length === 0);
-      const imageTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'image');
-      const videoTweets = filteredTweets.filter((t: any) => t.mediaUrls && t.mediaUrls.length > 0 && t.mediaType === 'video');
+      const imageTweets = filteredTweets.filter((t: any) => {
+        if (!t.mediaUrls || t.mediaUrls.length === 0) return false;
+        // mediaUrls is an array of {type: 'photo'|'video', url: string}
+        return t.mediaUrls[0].type === 'photo';
+      });
+      const videoTweets = filteredTweets.filter((t: any) => {
+        if (!t.mediaUrls || t.mediaUrls.length === 0) return false;
+        return t.mediaUrls[0].type === 'video';
+      });
       
       // Calculate how many of each type to send (use floor to avoid over-allocation)
       let textCount = Math.floor((postsPerRun * textPercent) / 100);
@@ -209,6 +216,7 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
     // To ensure EXACTLY postsPerRun tweets are sent, we'll keep trying with remaining tweets if some fail
     let tweetsQueue = [...tweetsToSend];
     let attemptedIds = new Set<string>();
+    let nextTweetIndex = tweetsToSend.length; // Track next unused tweet from filteredTweets
     
     while (sentCount < postsPerRun && tweetsQueue.length > 0) {
       const tweet = tweetsQueue.shift()!;
@@ -318,11 +326,12 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       } catch (error) {
         console.error(`[Scheduler] Failed to send tweet ${tweet.tweetId}:`, error);
         // If we still need more tweets and have extras available, add them to queue
-        if (sentCount < postsPerRun && filteredTweets.length > tweetsToSend.length) {
-          const usedIds = attemptedIds;
-          const nextTweet = filteredTweets.find(t => !usedIds.has(t.tweetId));
-          if (nextTweet) {
+        if (sentCount < postsPerRun && nextTweetIndex < filteredTweets.length) {
+          const nextTweet = filteredTweets[nextTweetIndex];
+          if (nextTweet && !attemptedIds.has(nextTweet.tweetId)) {
+            console.log(`[Scheduler] Retry: Adding fallback tweet ${nextTweet.tweetId} to queue`);
             tweetsQueue.push(nextTweet);
+            nextTweetIndex++;
           }
         }
       }
