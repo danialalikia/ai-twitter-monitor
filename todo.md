@@ -24,7 +24,15 @@
 - [x] Toast notifications for execution progress
 - [x] Real-time countdown timer تا اجرای بعدی
 - [x] نمایش "در حال اجرا..." هنگام execution
-- [x] Scheduler با منطق جدید: اجرای missed schedules
+- [x] رفع خطای moment(...).tz is not a function
+- [x] تست countdown timer در UI
+
+### Scheduler Fixes
+- [x] حذف منطق missed schedules (فقط در زمان دقیق اجرا می‌شود)
+- [x] رفع مشکل تکرار ارسال پست‌ها در تلگرام
+- [x] رفع getRecentSentTweetIds برای برگرداندن آرایه strings
+- [x] scheduler فقط در زمان دقیق اجرا می‌شود
+- [x] تست و تایید عدم اسپم
 
 ### Template & Placeholder
 - [x] بررسی template در دیتابیس
@@ -38,39 +46,23 @@
 - [x] کوچک کردن دکمه‌ها (size="sm")
 - [x] مخفی کردن text دکمه‌ها در موبایل
 
-### Scheduler Fixes
-- [x] پیاده‌سازی executeScheduledPost
-- [x] ساخت background scheduler
-- [x] رفع مشکل timezone mismatch
-- [x] Sync scheduler با ابتدای دقیقه
-- [x] تست manual execution
-- [x] تست automatic execution
-- [x] اضافه کردن toast notifications
-- [x] رفع مشکل missed schedules (اجرای زمان‌های از دست رفته)
-- [x] اضافه کردن getLastSentPost به db.ts
-- [x] اضافه کردن countdown timer به UI
-- [x] به‌روزرسانی real-time هر ثانیه
-
 ## 📝 Notes
 
 ### Scheduler Details
 - Runs every minute at :00 seconds (synced)
+- **Only executes at exact scheduled time** - no missed schedule execution
 - Supports multiple timezones
 - Filters tweets by distribution (viral/likes/retweets)
 - Records sent tweets to prevent duplicates
-- Automatic retry on failure
-- **NEW:** اگر زمان schedule را بعد از زمان تنظیم شده تغییر دهید، scheduler آن را detect می‌کند و فوراً اجرا می‌کند
-- **NEW:** Countdown timer real-time که هر ثانیه به‌روز می‌شود
+- Prevents spam: checks if executed in last 2 minutes
+- Countdown timer real-time که هر ثانیه به‌روز می‌شود
+- اگر زمان schedule گذشته باشد، منتظر فردا می‌ماند
 
 ### Known Issues
 - None! همه چیز کار می‌کند ✅
 
 ## 🎯 Future Enhancements
 
-1. **Email Notification:** ارسال ایمیل به owner هنگام ارسال خودکار
-2. **Analytics Dashboard:** آمار scheduled posts
-3. **Retry Mechanism:** تلاش مجدد برای ارسال‌های ناموفق
-
-## رفع خطای moment-timezone
-- [ ] رفع خطای moment(...).tz is not a function
-- [ ] تست countdown timer در UI
+1. **Auto-refresh بعد از اجرا:** وقتی scheduler اجرا می‌شود، لیست scheduled posts و history خودکار refresh شود
+2. **Progress indicator:** نوار پیشرفت برای نمایش درصد توییت‌های ارسال شده در هر اجرا
+3. **Pause/Resume Schedule:** دکمه موقت متوقف کردن schedule

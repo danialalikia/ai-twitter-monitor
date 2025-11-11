@@ -193,19 +193,14 @@ export async function checkAndExecuteSchedules() {
         const lastExecutionTime = lastExecution ? moment(lastExecution.sentAt).tz(timezone) : null;
         
         const shouldExecute = scheduleTimes.some((time: string) => {
-          // Parse schedule time
-          const [scheduleHour, scheduleMinute] = time.split(':').map(Number);
-          const scheduleTime = now.clone().hour(scheduleHour).minute(scheduleMinute).second(0);
+          // Only execute if current time exactly matches schedule time (HH:MM)
+          if (time !== currentTime) return false;
           
-          // Check if current time is past schedule time
-          if (!now.isSameOrAfter(scheduleTime)) return false;
-          
-          // Check if already executed for this time slot today
-          if (lastExecutionTime && lastExecutionTime.isSame(now, 'day')) {
-            const lastHour = lastExecutionTime.hour();
-            const lastMinute = lastExecutionTime.minute();
-            if (lastHour === scheduleHour && lastMinute === scheduleMinute) {
-              console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${time} today`);
+          // Check if already executed in the last 2 minutes to prevent duplicates
+          if (lastExecutionTime) {
+            const minutesSinceLastExecution = now.diff(lastExecutionTime, 'minutes');
+            if (minutesSinceLastExecution < 2) {
+              console.log(`[Scheduler] Schedule ${schedule.id} executed ${minutesSinceLastExecution} minutes ago, skipping`);
               return false;
             }
           }

@@ -551,7 +551,7 @@ export async function getRecentSentTweetIds(scheduleId: number, hours: number) {
         )
       );
     
-    return result;
+    return result.map(r => r.tweetId);
   } catch (error) {
     console.error("[Database] Failed to get recent sent tweets:", error);
     return [];
