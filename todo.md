@@ -550,3 +550,9 @@
 - [ ] Update settings schema with all new fields
 - [ ] Update settings router procedures
 - [ ] Test all new settings functionality
+
+## Bug: AI Rewrite Error
+- [x] بررسی دیتابیس برای یافتن مقدار aiRewriteEnabled
+- [x] بررسی کد router procedure برای یافتن شرط چک کردن - کد از fetchSettings می‌خواند به جای settings
+- [x] رفع مشکل که با وجود فعال بودن checkbox، خطا می‌دهد - اصلاح شد برای خواندن از settings
+- [ ] تست AI rewrite بعد از رفع

@@ -661,22 +661,17 @@ ${tweet.text}
           throw new Error("Tweet not found");
         }
 
-        // Get fetch settings for AI and template configuration
-        const allFetchSettings = await db.getFetchSettings(ctx.user.id);
-
-        if (!allFetchSettings || allFetchSettings.length === 0) {
-          throw new Error("Fetch settings not found. Please configure AI rewrite settings first.");
-        }
-
-        // Use the first (most recent) setting
-        const fetchSettings = allFetchSettings[0];
-
-        if (!fetchSettings.aiRewriteEnabled) {
+        // Check if AI rewrite is enabled in settings
+        if (!settings.aiRewriteEnabled) {
           throw new Error("AI rewrite is not enabled. Please enable it in settings.");
         }
 
-        if (!fetchSettings.aiRewritePrompt) {
+        if (!settings.aiRewritePrompt) {
           throw new Error("AI rewrite prompt is not configured. Please set it in settings.");
+        }
+
+        if (!settings.openRouterApiKey) {
+          throw new Error("OpenRouter API key is not configured. Please set it in settings.");
         }
 
         // Import AI rewrite helper
@@ -686,11 +681,11 @@ ${tweet.text}
         // Rewrite tweet with AI
         const rewrittenText = await rewriteTweetWithAI(
           tweet.text || "",
-          fetchSettings.aiRewritePrompt
+          settings.aiRewritePrompt
         );
 
         // Build message from template
-        const template = fetchSettings.telegramTemplate || getDefaultTelegramTemplate();
+        const template = settings.telegramTemplate || getDefaultTelegramTemplate();
         const message = buildTelegramMessage(template, {
           rewrittenText,
           originalText: tweet.text || "",
@@ -702,14 +697,14 @@ ${tweet.text}
           viewCount: tweet.viewCount,
           tweetUrl: tweet.url,
           createdAt: tweet.createdAt,
-          includeStats: Boolean(fetchSettings.includeStats),
-          includeLink: Boolean(fetchSettings.includeLink),
-          includeAuthor: Boolean(fetchSettings.includeAuthor),
-          includeDate: Boolean(fetchSettings.includeDate),
+          includeStats: Boolean(settings.includeStats),
+          includeLink: Boolean(settings.includeLink),
+          includeAuthor: Boolean(settings.includeAuthor),
+          includeDate: Boolean(settings.includeDate),
         });
 
         // Prepare media if includeMedia is enabled
-        const mediaArray = fetchSettings.includeMedia ? (tweet.mediaUrls || []) : [];
+        const mediaArray = settings.includeMedia ? (tweet.mediaUrls || []) : [];
         const actualMedia = mediaArray.map(media => ({
           url: media.url,
           isVideo: media.type === 'video',
