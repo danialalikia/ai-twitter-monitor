@@ -98,6 +98,7 @@ export const settings = mysqlTable("settings", {
   telegramBotToken: text("telegramBotToken"),
   telegramChatId: text("telegramChatId"),
   telegramOwnerId: varchar("telegramOwnerId", { length: 64 }), // Telegram user ID of the owner
+  ownerEmails: text("ownerEmails"), // Comma-separated list of owner emails for desktop access
   keywords: text("keywords").notNull(),
   scheduleTime: varchar("scheduleTime", { length: 5 }).notNull().default("08:00"),
   timezone: varchar("timezone", { length: 64 }).notNull().default("UTC"),

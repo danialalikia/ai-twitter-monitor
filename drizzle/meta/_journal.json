@@ -71,6 +71,13 @@
       "when": 1762851177679,
       "tag": "0009_lying_moonstone",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1762851647967,
+      "tag": "0010_serious_bloodstorm",
+      "breakpoints": true
     }
   ]
 }

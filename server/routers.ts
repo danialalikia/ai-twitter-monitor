@@ -51,10 +51,31 @@ export const appRouter = router({
         apifyToken: z.string().optional(),
         telegramBotToken: z.string().optional(),
         telegramChatId: z.string().optional(),
+        telegramOwnerId: z.string().optional(),
+        ownerEmails: z.string().optional(),
         keywords: z.string(),
         scheduleTime: z.string(),
         timezone: z.string(),
         maxItemsPerRun: z.number().min(1).max(1000),
+        
+        // AI Rewrite Settings
+        aiRewriteEnabled: z.number().optional(),
+        aiRewritePrompt: z.string().optional(),
+        openRouterApiKey: z.string().optional(),
+        aiModel: z.string().optional(),
+        temperature: z.string().optional(),
+        maxTokens: z.number().optional(),
+        topP: z.string().optional(),
+        
+        // Telegram Template Settings
+        telegramTemplate: z.string().optional(),
+        
+        // Include/Exclude Options
+        includeStats: z.number().optional(),
+        includeLink: z.number().optional(),
+        includeAuthor: z.number().optional(),
+        includeMedia: z.number().optional(),
+        includeDate: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const settings = await db.upsertSettings({

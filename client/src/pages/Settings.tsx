@@ -22,12 +22,19 @@ export default function Settings() {
     apifyToken: "",
     telegramBotToken: "",
     telegramChatId: "",
+    telegramOwnerId: "",
+    ownerEmails: "",
     keywords: "AI,artificial intelligence,machine learning,deep learning,LLM,GPT",
     scheduleTime: "08:00",
     timezone: "UTC",
     maxItemsPerRun: "200",
     aiRewriteEnabled: false,
     aiRewritePrompt: "",
+    openRouterApiKey: "",
+    aiModel: "openai/gpt-4o",
+    temperature: "0.7",
+    maxTokens: "500",
+    topP: "0.9",
     telegramTemplate: "",
     includeStats: true,
     includeLink: true,
@@ -42,12 +49,19 @@ export default function Settings() {
         apifyToken: settings.apifyToken || "",
         telegramBotToken: settings.telegramBotToken || "",
         telegramChatId: settings.telegramChatId || "",
+        telegramOwnerId: (settings as any).telegramOwnerId || "",
+        ownerEmails: (settings as any).ownerEmails || "",
         keywords: settings.keywords,
         scheduleTime: settings.scheduleTime,
         timezone: settings.timezone,
         maxItemsPerRun: String(settings.maxItemsPerRun),
         aiRewriteEnabled: Boolean((settings as any).aiRewriteEnabled),
         aiRewritePrompt: (settings as any).aiRewritePrompt || "",
+        openRouterApiKey: (settings as any).openRouterApiKey || "",
+        aiModel: (settings as any).aiModel || "openai/gpt-4o",
+        temperature: (settings as any).temperature || "0.7",
+        maxTokens: String((settings as any).maxTokens || 500),
+        topP: (settings as any).topP || "0.9",
         telegramTemplate: (settings as any).telegramTemplate || "",
         includeStats: (settings as any).includeStats !== undefined ? Boolean((settings as any).includeStats) : true,
         includeLink: (settings as any).includeLink !== undefined ? Boolean((settings as any).includeLink) : true,
@@ -72,6 +86,13 @@ export default function Settings() {
     updateMutation.mutate({
       ...formData,
       maxItemsPerRun: parseInt(formData.maxItemsPerRun) || 200,
+      maxTokens: parseInt(formData.maxTokens) || 500,
+      aiRewriteEnabled: formData.aiRewriteEnabled ? 1 : 0,
+      includeStats: formData.includeStats ? 1 : 0,
+      includeLink: formData.includeLink ? 1 : 0,
+      includeAuthor: formData.includeAuthor ? 1 : 0,
+      includeMedia: formData.includeMedia ? 1 : 0,
+      includeDate: formData.includeDate ? 1 : 0,
     });
   };
 
@@ -104,8 +125,8 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
@@ -118,8 +139,8 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="container mx-auto py-8 max-w-3xl">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <main className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           {/* API Tokens */}
           <Card>
             <CardHeader>
@@ -191,6 +212,43 @@ export default function Settings() {
                   >
                     @userinfobot
                   </a>
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telegramOwnerId">Telegram Owner ID (Mini App Access)</Label>
+                <Input
+                  id="telegramOwnerId"
+                  type="text"
+                  placeholder="Your Telegram user ID"
+                  value={formData.telegramOwnerId}
+                  onChange={(e) => setFormData({ ...formData, telegramOwnerId: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  فقط این Telegram ID می‌تونه به Mini App دسترسی داشته باشه. برای گرفتن ID خودت از{" "}
+                  <a
+                    href="https://t.me/userinfobot"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    @userinfobot
+                  </a>
+                  {" "}استفاده کن.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ownerEmails">Owner Emails (Desktop Access)</Label>
+                <Input
+                  id="ownerEmails"
+                  type="text"
+                  placeholder='["dannyshahsys@gmail.com","dekanshahsindh@f4b0e8e0a.org"]'
+                  value={formData.ownerEmails}
+                  onChange={(e) => setFormData({ ...formData, ownerEmails: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  فقط این emailها می‌تونن به دسکتاپ دسترسی داشته باشن. فرمت JSON array استفاده کن با ایمیل‌های کامل از Manus.
                 </p>
               </div>
             </CardContent>
@@ -288,6 +346,98 @@ export default function Settings() {
               {formData.aiRewriteEnabled && (
                 <>
                   <div className="space-y-2">
+                    <Label htmlFor="openRouterApiKey">OpenRouter API Key *</Label>
+                    <Input
+                      id="openRouterApiKey"
+                      type="password"
+                      placeholder="sk-or-v1-..."
+                      value={formData.openRouterApiKey}
+                      onChange={(e) => setFormData({ ...formData, openRouterApiKey: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">openrouter.ai/keys</a>
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aiModel">AI Model</Label>
+                    <select
+                      id="aiModel"
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                      value={formData.aiModel}
+                      onChange={(e) => setFormData({ ...formData, aiModel: e.target.value })}
+                    >
+                      <optgroup label="OpenAI">
+                        <option value="openai/gpt-4o">GPT-4o (Fast, high quality)</option>
+                        <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Cheap)</option>
+                      </optgroup>
+                      <optgroup label="Anthropic">
+                        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Best writing)</option>
+                        <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
+                        <option value="anthropic/claude-3-haiku">Claude 3 Haiku (Fast)</option>
+                      </optgroup>
+                      <optgroup label="Google">
+                        <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        <option value="google/gemini-1.5-flash">Gemini 1.5 Flash (Fast)</option>
+                      </optgroup>
+                      <optgroup label="Meta">
+                        <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                        <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B (Fast)</option>
+                      </optgroup>
+                      <optgroup label="Mistral">
+                        <option value="mistralai/mistral-large">Mistral Large</option>
+                        <option value="mistralai/mistral-medium">Mistral Medium</option>
+                      </optgroup>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      Choose the AI model for rewriting tweets
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="temperature">Temperature</Label>
+                      <Input
+                        id="temperature"
+                        type="number"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value={formData.temperature}
+                        onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">0-2 (creativity)</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="maxTokens">Max Tokens</Label>
+                      <Input
+                        id="maxTokens"
+                        type="number"
+                        min="50"
+                        max="4000"
+                        step="50"
+                        value={formData.maxTokens}
+                        onChange={(e) => setFormData({ ...formData, maxTokens: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">Output length</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="topP">Top P</Label>
+                      <Input
+                        id="topP"
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value={formData.topP}
+                        onChange={(e) => setFormData({ ...formData, topP: e.target.value })}
+                      />
+                      <p className="text-xs text-muted-foreground">0-1 (diversity)</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="aiRewritePrompt">AI Rewrite Prompt *</Label>
                     <Textarea
                       id="aiRewritePrompt"
@@ -317,7 +467,7 @@ export default function Settings() {
 
                   <div className="space-y-3">
                     <Label>Include in Telegram Message</Label>
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
@@ -380,14 +530,78 @@ export default function Settings() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Live Preview */}
+                  <div className="space-y-2">
+                    <Label>👁️ Live Preview</Label>
+                    <div className="p-4 border border-border rounded-md bg-muted/30">
+                      <div className="whitespace-pre-wrap text-sm">
+                        {(() => {
+                          const sampleData = {
+                            rewritten_text: formData.aiRewritePrompt 
+                              ? "این یک توییت بازنویسی شده با AI است 🚀\n\nهوش مصنوعی می‌تونه محتوای شما رو بهتر کنه!"
+                              : "[AI will rewrite the tweet based on your prompt]",
+                            original_text: "This is an example tweet about AI and machine learning.",
+                            author: "Elon Musk",
+                            handle: "elonmusk",
+                            likes: "15,234",
+                            retweets: "3,456",
+                            comments: "789",
+                            views: "125,678",
+                            link: "https://twitter.com/elonmusk/status/123456789",
+                            date: "2025-11-09",
+                          };
+
+                          let preview = formData.telegramTemplate || 
+                            `{{rewritten_text}}\n\n✍️ {{author}} ({{handle}})\n📊 {{likes}} likes · {{retweets}} retweets · {{comments}} comments\n🔗 {{link}}`;
+
+                          // Replace placeholders
+                          preview = preview
+                            .replace(/\{\{rewritten_text\}\}/g, sampleData.rewritten_text)
+                            .replace(/\{\{original_text\}\}/g, sampleData.original_text)
+                            .replace(/\{\{author\}\}/g, sampleData.author)
+                            .replace(/\{\{handle\}\}/g, sampleData.handle)
+                            .replace(/\{\{likes\}\}/g, sampleData.likes)
+                            .replace(/\{\{retweets\}\}/g, sampleData.retweets)
+                            .replace(/\{\{comments\}\}/g, sampleData.comments)
+                            .replace(/\{\{views\}\}/g, sampleData.views)
+                            .replace(/\{\{link\}\}/g, sampleData.link)
+                            .replace(/\{\{date\}\}/g, sampleData.date);
+
+                          // Apply include/exclude logic
+                          const lines = preview.split('\n');
+                          const filteredLines = lines.filter(line => {
+                            if (!formData.includeStats && (line.includes('likes') || line.includes('retweets') || line.includes('comments') || line.includes('views'))) {
+                              return false;
+                            }
+                            if (!formData.includeLink && line.includes('twitter.com')) {
+                              return false;
+                            }
+                            if (!formData.includeAuthor && (line.includes(sampleData.author) || line.includes(sampleData.handle))) {
+                              return false;
+                            }
+                            if (!formData.includeDate && line.includes(sampleData.date)) {
+                              return false;
+                            }
+                            return true;
+                          });
+
+                          return filteredLines.join('\n') || '[Empty preview - configure your template]';
+                        })()}
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      This is how your Telegram message will look (checkboxes control what's included)
+                    </p>
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
           {/* Save Button */}
-          <div className="flex justify-end">
-            <Button type="submit" disabled={updateMutation.isPending}>
+          <div className="flex justify-end sticky bottom-0 py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border -mx-4 px-4 md:static md:border-0 md:bg-transparent md:backdrop-blur-none md:py-0">
+            <Button type="submit" disabled={updateMutation.isPending} className="w-full md:w-auto">
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -534,3 +534,19 @@
 - [x] اضافه دکمه "Send with AI" به TweetCard با Sparkles icon
 - [x] تست کامل flow - No TypeScript errors, server running
 - [x] ذخیره checkpoint - 556da59c
+
+## Settings Page - Missing Features (User Request)
+- [ ] Add Telegram Owner ID field (Mini App Access)
+- [ ] Add Owner Emails field (Desktop Access) - comma-separated list
+- [ ] Add OpenRouter API Key field for AI rewriting
+- [ ] Add AI Model dropdown selection (GPT-4o, GPT-4o-mini, etc.)
+- [ ] Add AI Temperature slider/input (0-2)
+- [ ] Add Max Tokens input
+- [ ] Add Top P input (0-1)
+- [ ] Add AI Rewrite Prompt textarea with example
+- [ ] Add Telegram Message Template textarea with placeholders
+- [ ] Add Include in Telegram Message checkboxes (Stats, Author, Tweet Date, Twitter Link, Media)
+- [ ] Add Live Preview section for Telegram message
+- [ ] Update settings schema with all new fields
+- [ ] Update settings router procedures
+- [ ] Test all new settings functionality
