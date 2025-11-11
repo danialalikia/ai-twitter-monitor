@@ -1,4 +1,5 @@
-import * as db from "./db";
+import * as db from './db';
+import { tryAcquireScheduleLock, releaseScheduleLock } from './db-atomic-lock';
 import moment from 'moment-timezone';
 
 /**
@@ -345,9 +346,6 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
   }
 }
 
-// In-memory lock to prevent concurrent executions of the same schedule
-const executionLocks = new Map<number, string>(); // scheduleId -> currentMinute
-
 /**
  * Check and execute all due scheduled posts
  * This should be called periodically (e.g., every minute)
@@ -359,9 +357,6 @@ export async function checkAndExecuteSchedules() {
       return;
     }
     
-    // Get current minute to clear old locks
-    const currentMinute = moment().format('HH:mm');
-    
     for (const schedule of activeSchedules) {
       try {
         // Get current time in schedule's timezone
@@ -372,11 +367,7 @@ export async function checkAndExecuteSchedules() {
         
         // Clear database lock if minute has changed (allow execution in new minute)
         if (schedule.lastExecutionMinute && schedule.lastExecutionMinute !== currentTime) {
-          await db.updateScheduledPost(schedule.id, {
-            lastExecutionMinute: null,
-          });
-          // Also clear in-memory lock
-          executionLocks.delete(schedule.id);
+          await releaseScheduleLock(schedule.id);
         }
         
         // Parse schedule times
@@ -397,20 +388,6 @@ export async function checkAndExecuteSchedules() {
           // Only execute if current time exactly matches schedule time (HH:MM)
           if (time !== currentTime) return false;
           
-          // Check in-memory lock first (prevents multiple executions in same minute)
-          const lockedMinute = executionLocks.get(schedule.id);
-          if (lockedMinute === currentTime) {
-            console.log(`[Scheduler] Schedule ${schedule.id} locked in memory for ${currentTime}, skipping`);
-            return false;
-          }
-          
-          // CRITICAL: Check database lock (lastExecutionMinute) to prevent duplicate runs
-          // This is more reliable than in-memory lock because it persists across server restarts
-          if (schedule.lastExecutionMinute === currentTime) {
-            console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${currentTime} (database lock), skipping`);
-            return false;
-          }
-          
           // For weekly schedules, check day of week
           if (schedule.scheduleType === 'weekly') {
             const weekDays = typeof schedule.weekDays === 'string'
@@ -426,22 +403,24 @@ export async function checkAndExecuteSchedules() {
         });
         
         if (shouldExecute) {
+          console.log(`[Scheduler] Time matched for schedule ${schedule.id} at ${currentTime}`);
+          
+          // ATOMIC LOCK: Try to acquire lock - only ONE process will succeed
+          const lockAcquired = await tryAcquireScheduleLock(schedule.id, currentTime);
+          
+          if (!lockAcquired) {
+            console.log(`[Scheduler] Schedule ${schedule.id} already locked by another process, skipping`);
+            return; // Skip this schedule - another process is handling it
+          }
+          
+          // Lock acquired successfully - proceed with execution
           console.log(`[Scheduler] Executing schedule ${schedule.id} at ${currentTime}`);
-          
-          // Set in-memory lock before execution
-          executionLocks.set(schedule.id, currentTime);
-          
-          // CRITICAL: Set database lock BEFORE execution to prevent concurrent runs
-          await db.updateScheduledPost(schedule.id, {
-            lastExecutionMinute: currentTime,
-            lastRunAt: new Date(),
-          });
           
           try {
             await executeScheduledPost(schedule.id, schedule.userId);
           } catch (error) {
             console.error(`[Scheduler] Failed to execute schedule ${schedule.id}:`, error);
-            // Don't clear the lock - keep it to prevent retries in same minute
+            // Don't release the lock - keep it to prevent retries in same minute
           }
         }
       } catch (error) {

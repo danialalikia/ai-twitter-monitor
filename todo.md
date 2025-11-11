@@ -146,3 +146,11 @@
 - [x] رفع دکمه حذف گروهی: کد backend و UI درست است (deleteSentGroup + Trash2 button)
 - [x] رفع ایجاد چند گروه تکراری: با رفع اجرای همزمان حل می‌شود
 - [ ] تست نهایی: تایید فقط 1 actor و 1 گروه در هر trigger
+
+## رفع مشکل Database Lock - مرحله 6
+- [x] بررسی لاگ‌های scheduler: race condition شناسایی شد
+- [x] شناسایی race condition: 4 process همزمان چک می‌کنند قبل از ست شدن lock
+- [x] پیاده‌سازی atomic lock با raw SQL UPDATE WHERE
+- [x] ساخت tryAcquireScheduleLock و releaseScheduleLock
+- [x] تغییر scheduler برای استفاده از atomic lock
+- [ ] تست: تایید فقط 1 actor در هر trigger
