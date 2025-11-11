@@ -40,6 +40,19 @@ async function startServer() {
   // Google OAuth for Telegram Mini App
   app.get("/api/auth/google", initiateGoogleOAuth);
   app.get("/api/auth/google/callback", handleGoogleOAuthCallback);
+  
+  // Telegram Webhook - must be outside tRPC
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      // Import webhook handler
+      const { handleTelegramWebhook } = await import("../telegram-webhook-handler");
+      await handleTelegramWebhook(req.body);
+      res.status(200).json({ ok: true });
+    } catch (error) {
+      console.error("[Webhook] Error:", error);
+      res.status(500).json({ ok: false, error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",

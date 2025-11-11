@@ -5,21 +5,27 @@
 import type { NormalizedTweet } from "./apify";
 
 export async function fetchSingleTweet(
-  tweetId: string,
+  tweetUrl: string,
   apifyToken: string
 ): Promise<NormalizedTweet | null> {
   const actorId = "kaitoeasyapi~twitter-x-data-tweet-scraper-pay-per-result-cheapest";
 
-  // Use tweet URL as search query
-  const tweetUrl = `https://twitter.com/i/status/${tweetId}`;
+  // Extract tweet ID from URL
+  const urlMatch = tweetUrl.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/);
+  if (!urlMatch) {
+    console.error('[Apify] Invalid tweet URL format');
+    return null;
+  }
   
+  const tweetId = urlMatch[1];
+  
+  // Use tweetIDs parameter to fetch specific tweet
   const input = {
-    twitterContent: tweetUrl,
+    tweetIDs: [tweetId],
     maxItems: 1,
-    queryType: "Latest",
   };
 
-  console.log('[Apify] Fetching single tweet:', tweetId);
+  console.log('[Apify] Fetching single tweet:', tweetUrl);
 
   try {
     // Start the actor run

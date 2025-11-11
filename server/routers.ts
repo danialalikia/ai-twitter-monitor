@@ -896,7 +896,7 @@ ${tweet.text}
         const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
 
         // Set webhook URL
-        const webhookUrl = `${miniAppUrl}/api/trpc/telegram.webhook`;
+        const webhookUrl = `${miniAppUrl}/api/telegram/webhook`;
         const setWebhookResponse = await fetch(
           `https://api.telegram.org/bot${settings.telegramBotToken}/setWebhook`,
           {

@@ -103,8 +103,8 @@ export async function handleTweetUrl(
       return;
     }
 
-    // Fetch tweet from Apify
-    const tweet = await fetchSingleTweet(tweetId, settings.apifyToken);
+    // Fetch tweet from Apify - pass full URL
+    const tweet = await fetchSingleTweet(url, settings.apifyToken);
     if (!tweet) {
       await sendTelegramMessage(botToken, chatId, {
         chat_id: chatId,
