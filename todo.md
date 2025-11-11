@@ -233,3 +233,10 @@
 - [x] حذف Google OAuth button
 - [x] اضافه Manus OAuth button
 - [ ] تست login با Manus OAuth
+
+# Add Author Bio to TweetCard
+
+- [x] بررسی Apify API response برای author bio
+- [x] اضافه authorBio به tweets schema (قبلاً اضافه شده)
+- [x] نمایش bio در TweetCard زیر نام کاربر
+- [ ] تست با tweets موجود

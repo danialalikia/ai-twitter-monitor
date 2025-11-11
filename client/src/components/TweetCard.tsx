@@ -364,6 +364,12 @@ export default function TweetCard({ tweet, onRemove }: TweetCardProps) {
                   {new Date(tweet.createdAt).toLocaleDateString()}
                 </span>
               </div>
+              {/* Author Bio/Description */}
+              {tweet.authorDescription && (
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {tweet.authorDescription}
+                </p>
+              )}
             </div>
           </div>
 
