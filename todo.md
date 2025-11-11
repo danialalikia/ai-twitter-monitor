@@ -139,3 +139,10 @@
 - [ ] تست: دقیقاً postsPerRun=10 ارسال شود
 - [ ] تست: هیچ duplicate ارسال نشود
 - [x] رفع خطای "caption too long": محدود کردن caption به 1024 کاراکتر
+
+## رفع مشکلات Scheduler - مرحله 5 (گزارش کاربر)
+- [x] رفع اجرای همزمان 4 actor: اضافه lastExecutionMinute به schema + database lock
+- [x] بررسی in-memory lock: ترکیب in-memory + database lock برای جلوگیری از اجرای همزمان
+- [x] رفع دکمه حذف گروهی: کد backend و UI درست است (deleteSentGroup + Trash2 button)
+- [x] رفع ایجاد چند گروه تکراری: با رفع اجرای همزمان حل می‌شود
+- [ ] تست نهایی: تایید فقط 1 actor و 1 گروه در هر trigger

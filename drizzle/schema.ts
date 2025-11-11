@@ -359,6 +359,7 @@ export const scheduledPosts = mysqlTable("scheduledPosts", {
   
   // Execution tracking
   lastRunAt: timestamp("lastRunAt"),
+  lastExecutionMinute: varchar("lastExecutionMinute", { length: 5 }), // "HH:MM" to prevent duplicate runs in same minute
   nextRunAt: timestamp("nextRunAt"),
   totalSent: int("totalSent").default(0).notNull(),
   

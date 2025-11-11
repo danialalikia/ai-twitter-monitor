@@ -1,0 +1,1 @@
+ALTER TABLE `scheduledPosts` ADD `lastExecutionMinute` varchar(5);

@@ -359,6 +359,9 @@ export async function checkAndExecuteSchedules() {
       return;
     }
     
+    // Get current minute to clear old locks
+    const currentMinute = moment().format('HH:mm');
+    
     for (const schedule of activeSchedules) {
       try {
         // Get current time in schedule's timezone
@@ -366,6 +369,15 @@ export async function checkAndExecuteSchedules() {
         const now = moment().tz(timezone);
         const currentTime = now.format('HH:mm');
         const currentDay = now.day(); // 0 = Sunday, 6 = Saturday
+        
+        // Clear database lock if minute has changed (allow execution in new minute)
+        if (schedule.lastExecutionMinute && schedule.lastExecutionMinute !== currentTime) {
+          await db.updateScheduledPost(schedule.id, {
+            lastExecutionMinute: null,
+          });
+          // Also clear in-memory lock
+          executionLocks.delete(schedule.id);
+        }
         
         // Parse schedule times
         const scheduleTimes = typeof schedule.scheduleTimes === 'string'
@@ -388,17 +400,15 @@ export async function checkAndExecuteSchedules() {
           // Check in-memory lock first (prevents multiple executions in same minute)
           const lockedMinute = executionLocks.get(schedule.id);
           if (lockedMinute === currentTime) {
-            console.log(`[Scheduler] Schedule ${schedule.id} locked for ${currentTime}, skipping`);
+            console.log(`[Scheduler] Schedule ${schedule.id} locked in memory for ${currentTime}, skipping`);
             return false;
           }
           
-          // Check if already executed in the same minute to prevent duplicates
-          if (lastExecutionTime) {
-            const lastExecutionMinute = lastExecutionTime.format('HH:mm');
-            if (lastExecutionMinute === currentTime) {
-              console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${currentTime}, skipping`);
-              return false;
-            }
+          // CRITICAL: Check database lock (lastExecutionMinute) to prevent duplicate runs
+          // This is more reliable than in-memory lock because it persists across server restarts
+          if (schedule.lastExecutionMinute === currentTime) {
+            console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${currentTime} (database lock), skipping`);
+            return false;
           }
           
           // For weekly schedules, check day of week
@@ -417,13 +427,21 @@ export async function checkAndExecuteSchedules() {
         
         if (shouldExecute) {
           console.log(`[Scheduler] Executing schedule ${schedule.id} at ${currentTime}`);
-          // Set lock before execution
+          
+          // Set in-memory lock before execution
           executionLocks.set(schedule.id, currentTime);
+          
+          // CRITICAL: Set database lock BEFORE execution to prevent concurrent runs
+          await db.updateScheduledPost(schedule.id, {
+            lastExecutionMinute: currentTime,
+            lastRunAt: new Date(),
+          });
+          
           try {
             await executeScheduledPost(schedule.id, schedule.userId);
-          } finally {
-            // Keep lock for this minute (will be cleared when minute changes)
-            // No need to clear immediately
+          } catch (error) {
+            console.error(`[Scheduler] Failed to execute schedule ${schedule.id}:`, error);
+            // Don't clear the lock - keep it to prevent retries in same minute
           }
         }
       } catch (error) {
