@@ -375,6 +375,7 @@ export type InsertScheduledPost = typeof scheduledPosts.$inferInsert;
 export const sentPosts = mysqlTable("sent_posts", {
   id: int("id").autoincrement().primaryKey(),
   scheduleId: int("scheduleId").notNull(),
+  executionId: varchar("executionId", { length: 64 }), // Group posts by execution run
   tweetId: varchar("tweetId", { length: 64 }).notNull(),
   sentAt: timestamp("sentAt").defaultNow().notNull(),
   

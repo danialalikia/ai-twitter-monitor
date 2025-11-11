@@ -84,7 +84,7 @@ export function ScheduledPostDialog({ open, onOpenChange, schedule, onSuccess }:
   const [useAiTranslation, setUseAiTranslation] = useState(false);
   const [telegramTemplate, setTelegramTemplate] = useState(defaultTemplate);
   
-  // Duplicate prevention
+  // Duplicate prevention (always enabled with 24 hours window)
   const [preventDuplicates, setPreventDuplicates] = useState(true);
   const [duplicateTimeWindow, setDuplicateTimeWindow] = useState(24);
   

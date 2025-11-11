@@ -366,41 +366,78 @@ export default function ScheduledPosts() {
             </Card>
           )}
           
-          <div className="grid gap-4">
-            {sentTweets?.map((tweet) => (
-              <TweetCard
-                key={tweet.id}
-                tweet={{
-                  id: tweet.id,
-                  tweetId: tweet.tweetId,
-                  url: tweet.url,
-                  text: tweet.text,
-                  createdAt: tweet.createdAt,
-                  authorHandle: tweet.authorHandle,
-                  authorName: tweet.authorName || tweet.authorHandle,
-                  authorVerified: tweet.authorVerified,
-                  likeCount: tweet.likeCount,
-                  retweetCount: tweet.retweetCount,
-                  replyCount: tweet.replyCount,
-                  viewCount: Number(tweet.viewCount || 0),
-                  mediaUrls: tweet.mediaUrls as any,
-                  authorProfileUrl: null,
-                  authorProfileImageUrl: null,
-                  authorCoverPhoto: null,
-                  authorFollowersCount: 0,
-                  authorFollowingCount: 0,
-                  authorDescription: null,
-                  authorJobTitle: null,
-                  authorLocation: null,
-                  authorWebsite: null,
-                  authorJoinDate: null,
-                  authorTweetsCount: 0,
-                  mediaType: null,
-                  trendScore: 0,
-                  categories: null,
-                }}
-              />
-            ))}
+          <div className="space-y-6">
+            {(() => {
+              // Group tweets by executionId
+              const grouped = sentTweets?.reduce((acc, tweet) => {
+                const key = tweet.executionId || 'unknown';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(tweet);
+                return acc;
+              }, {} as Record<string, typeof sentTweets>);
+              
+              return Object.entries(grouped || {}).map(([executionId, tweets]) => {
+                const firstTweet = tweets[0];
+                const sentTime = moment(firstTweet.sentAt).locale('fa').format('jYYYY/jMM/jDD HH:mm');
+                
+                return (
+                  <Card key={executionId}>
+                    <CardHeader className="cursor-pointer" onClick={() => {
+                      const el = document.getElementById(`exec-${executionId}`);
+                      if (el) el.classList.toggle('hidden');
+                    }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">
+                            {sentTime} - {tweets.length} پست ارسال شد
+                          </CardTitle>
+                          <CardDescription>
+                            کلیک کنید برای مشاهده جزئیات
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary">{tweets.length}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent id={`exec-${executionId}`} className="hidden space-y-4">
+                      {tweets.map((tweet) => (
+                        <TweetCard
+                          key={tweet.id}
+                          tweet={{
+                            id: tweet.id,
+                            tweetId: tweet.tweetId,
+                            url: tweet.url,
+                            text: tweet.text,
+                            createdAt: tweet.createdAt,
+                            authorHandle: tweet.authorHandle,
+                            authorName: tweet.authorName || tweet.authorHandle,
+                            authorVerified: tweet.authorVerified,
+                            likeCount: tweet.likeCount,
+                            retweetCount: tweet.retweetCount,
+                            replyCount: tweet.replyCount,
+                            viewCount: Number(tweet.viewCount || 0),
+                            mediaUrls: tweet.mediaUrls as any,
+                            authorProfileUrl: null,
+                            authorProfileImageUrl: null,
+                            authorCoverPhoto: null,
+                            authorFollowersCount: 0,
+                            authorFollowingCount: 0,
+                            authorDescription: null,
+                            authorJobTitle: null,
+                            authorLocation: null,
+                            authorWebsite: null,
+                            authorJoinDate: null,
+                            authorTweetsCount: 0,
+                            mediaType: null,
+                            trendScore: 0,
+                            categories: null,
+                          }}
+                        />
+                      ))}
+                    </CardContent>
+                  </Card>
+                );
+              });
+            })()}
           </div>
         </TabsContent>
       </Tabs>

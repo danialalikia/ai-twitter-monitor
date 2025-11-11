@@ -467,6 +467,7 @@ export async function getSentPostsInWindow(scheduleId: number, hours: number) {
 
 export async function recordSentPost(data: {
   scheduleId: number;
+  executionId?: string;
   tweetId: string;
   url: string;
   text: string;
@@ -489,6 +490,7 @@ export async function recordSentPost(data: {
   try {
     await db.insert(sentPosts).values({
       scheduleId: data.scheduleId,
+      executionId: data.executionId,
       tweetId: data.tweetId,
       sentAt: new Date(),
       url: data.url,

@@ -1,0 +1,1 @@
+ALTER TABLE `sent_posts` ADD `executionId` varchar(64);

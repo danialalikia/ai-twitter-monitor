@@ -26,6 +26,10 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       throw new Error("Telegram not configured");
     }
     
+    // Generate unique execution ID for grouping
+    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`[Scheduler] Starting execution ${executionId}`);
+    
     // STEP 1: Run Apify actor to fetch fresh tweets before sending
     console.log(`[Scheduler] Triggering Apify actor to fetch fresh tweets...`);
     
@@ -191,8 +195,16 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         const tweetToSend = tweet;
         const useAI = Boolean(schedule.useAiTranslation);
         
-        // Build caption/message
-        const caption = `🐦 **${tweetToSend.authorName || tweetToSend.authorHandle}** (@${tweetToSend.authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetToSend.text}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 ${tweetToSend.url}`;
+        // Build caption/message (escape Markdown special characters)
+        const escapeMarkdown = (text: string) => {
+          return text.replace(/([_*\[\]()~`>#+\-=|{}.!])/g, '\\$1');
+        };
+        
+        const authorName = escapeMarkdown(tweetToSend.authorName || tweetToSend.authorHandle);
+        const authorHandle = escapeMarkdown(tweetToSend.authorHandle);
+        const tweetText = escapeMarkdown(tweetToSend.text);
+        
+        const caption = `🐦 *${authorName}* (@${authorHandle})${tweetToSend.authorVerified ? ' ✓' : ''}\n\n${tweetText}\n\n❤️ ${tweetToSend.likeCount.toLocaleString()} | 🔁 ${tweetToSend.retweetCount.toLocaleString()} | 💬 ${tweetToSend.replyCount.toLocaleString()}${tweetToSend.viewCount ? ` | 👁️ ${tweetToSend.viewCount.toLocaleString()}` : ''}\n\n🔗 ${tweetToSend.url}`;
         
         // Determine send method based on media
         const mediaUrls = tweetToSend.mediaUrls || [];
@@ -206,8 +218,9 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
           });
         } else if (mediaUrls.length === 1) {
           // Single media - send as photo or video with caption
-          const mediaUrl = mediaUrls[0];
-          const mediaType = tweetToSend.mediaType;
+          const mediaItem = mediaUrls[0];
+          const mediaUrl = typeof mediaItem === 'string' ? mediaItem : mediaItem.url;
+          const mediaType = typeof mediaItem === 'string' ? tweetToSend.mediaType : mediaItem.type;
           
           if (mediaType === 'video') {
             await sendTelegramVideo(settings.telegramBotToken, settings.telegramChatId, {
@@ -225,12 +238,17 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
           }
         } else {
           // Multiple media - send as media group
-          const media = mediaUrls.map((url: string, index: number) => ({
-            type: tweetToSend.mediaType === 'video' ? 'video' as const : 'photo' as const,
-            media: url,
-            caption: index === 0 ? caption : undefined, // Only first item gets caption
-            parse_mode: index === 0 ? "Markdown" as const : undefined,
-          }));
+          // Note: Telegram media group doesn't support parse_mode in caption
+          const plainCaption = caption.replace(/\*/g, '').replace(/\\/g, '');
+          const media = mediaUrls.map((item: any, index: number) => {
+            const url = typeof item === 'string' ? item : item.url;
+            const type = typeof item === 'string' ? (tweetToSend.mediaType === 'video' ? 'video' as const : 'photo' as const) : item.type;
+            return {
+              type,
+              media: url,
+              caption: index === 0 ? plainCaption : undefined,
+            };
+          });
           
           await sendTelegramMediaGroup(settings.telegramBotToken, settings.telegramChatId, media);
         }
@@ -238,6 +256,7 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
         // Record sent post
         await db.recordSentPost({
           scheduleId,
+          executionId,
           tweetId: tweet.tweetId,
           url: tweet.url,
           text: tweet.text,

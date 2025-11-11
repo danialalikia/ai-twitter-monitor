@@ -106,3 +106,14 @@
 - [x] رفع: تغییر به schedule.keywords
 - [ ] تست manual execution
 - [ ] تست automatic execution در زمان مشخص
+
+## گروه‌بندی تاریخچه ارسال و جلوگیری از تکرار
+- [x] بررسی منطق preventDuplicates: getRecentSentTweetIds درست کار می‌کند
+- [x] duplicateTimeWindow پیشفرض 24 ساعت است
+- [x] preventDuplicates پیشفرض true است
+- [x] اضافه کردن executionId به sent_posts schema
+- [x] اضافه کردن executionId به recordSentPost interface
+- [x] Generate executionId در scheduler
+- [x] تغییر UI تاریخچه به گروه‌بندی براساس executionId (collapsible)
+- [ ] تست: محتوای تکراری در 24 ساعت ارسال نشود
+- [ ] تست: گروه‌بندی تاریخچه به درستی کار کند
