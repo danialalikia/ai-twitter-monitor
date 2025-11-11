@@ -59,6 +59,13 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start the scheduler for automated scheduled posts
+    import('../scheduler').then(({ startScheduler }) => {
+      startScheduler();
+    }).catch(err => {
+      console.error('[Server] Failed to start scheduler:', err);
+    });
   });
 }
 

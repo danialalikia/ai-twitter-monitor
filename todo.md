@@ -432,3 +432,33 @@
 - [x] اضافه کردن responsive classes برای دکمه‌ها
 - [x] مخفی کردن text دکمه‌ها در موبایل (فقط آیکون)
 - [x] تست در سایزهای مختلف
+
+## رفع مشکل Scheduled Posts - ارسال خودکار
+- [ ] بررسی کد scheduled router و procedures
+- [ ] بررسی وجود cron job یا scheduler
+- [ ] پیاده‌سازی background job برای چک کردن scheduled posts
+- [ ] تست ایجاد scheduled post
+- [ ] تست اجرای خودکار در زمان مشخص
+- [ ] تست ارسال به تلگرام با AI rewrite
+
+## رفع مشکل Scheduled Posts (Automatic Sending)
+- [x] بررسی کد scheduled posts و شناسایی مشکل - executeNow فقط placeholder بود
+- [x] بررسی cron job و اجرای خودکار - هیچ background job وجود نداشت
+- [x] پیاده‌سازی کامل executeScheduledPost function
+- [x] ساخت background scheduler (checkAndExecuteSchedules)
+- [x] رفع مشکل timezone handling با moment-timezone
+- [x] اضافه کردن scheduler به server startup
+- [x] تست manual execution (executeNow) - 10 توییت ارسال شد
+- [x] تست automatic execution - scheduler خودکار کار می‌کند
+- [x] رفع مشکل جدول sent_posts (migration)
+- [x] اضافه کردن logging برای debug
+- [x] تست کامل با timezone Asia/Tehran
+
+## رفع مشکل Responsive Dashboard
+- [x] بررسی تفاوت‌های responsive بین پروژه قبلی و فعلی
+- [x] شناسایی فایل‌هایی که از اول نوشته شدند (Settings.tsx)
+- [x] رفع مشکل double padding (حذف px-4 از container)
+- [x] تغییر max-w-4xl به max-w-3xl
+- [x] کوچک کردن دکمه‌های header (size="sm")
+- [x] مخفی کردن text دکمه‌ها در موبایل (فقط آیکون)
+- [x] تست responsive در سایزهای مختلف

@@ -951,8 +951,9 @@ ${tweet.text}
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         console.log(`[executeNow] Manual execution requested for schedule ${input.id}`);
-        // For now, just return success - actual execution logic can be added later
-        return { success: true, message: "Schedule execution started" };
+        const { executeScheduledPost } = await import('./scheduler');
+        const result = await executeScheduledPost(input.id, ctx.user.id);
+        return result;
       }),
 
     sentTweets: protectedProcedure
