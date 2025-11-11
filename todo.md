@@ -556,3 +556,8 @@
 - [x] بررسی کد router procedure برای یافتن شرط چک کردن - کد از fetchSettings می‌خواند به جای settings
 - [x] رفع مشکل که با وجود فعال بودن checkbox، خطا می‌دهد - اصلاح شد برای خواندن از settings
 - [ ] تست AI rewrite بعد از رفع
+
+## Bug: AI Rewrite Template & t.co Links
+- [x] رفع مشکل template placeholder - مشکل از خالی بودن telegramTemplate بود - اصلاح شد
+- [x] حذف فقط لینک آخر t.co (لینک خود توییت) - لینک‌های داخل متن حفظ می‌شوند
+- [ ] تست ارسال به تلگرام بعد از رفع

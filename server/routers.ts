@@ -678,14 +678,31 @@ ${tweet.text}
         const { rewriteTweetWithAI } = await import("./lib/ai-rewrite");
         const { buildTelegramMessage, getDefaultTelegramTemplate } = await import("./lib/telegram-template");
 
+        // Remove only the last t.co link (which is usually the tweet's own URL added by Apify)
+        // Keep other links in the text as they are part of the content
+        let cleanText = tweet.text || "";
+        const tcoLinkRegex = /https?:\/\/t\.co\/\w+/g;
+        const matches = cleanText.match(tcoLinkRegex);
+        
+        if (matches && matches.length > 0) {
+          // Remove only the last occurrence (the tweet's own URL)
+          const lastLink = matches[matches.length - 1];
+          const lastIndex = cleanText.lastIndexOf(lastLink);
+          cleanText = cleanText.substring(0, lastIndex) + cleanText.substring(lastIndex + lastLink.length);
+        }
+        
+        cleanText = cleanText.replace(/\s+/g, " ").trim();
+
         // Rewrite tweet with AI
         const rewrittenText = await rewriteTweetWithAI(
-          tweet.text || "",
+          cleanText,
           settings.aiRewritePrompt
         );
 
-        // Build message from template
-        const template = settings.telegramTemplate || getDefaultTelegramTemplate();
+        // Build message from template (use default if empty or null)
+        const template = (settings.telegramTemplate && settings.telegramTemplate.trim()) 
+          ? settings.telegramTemplate 
+          : getDefaultTelegramTemplate();
         const message = buildTelegramMessage(template, {
           rewrittenText,
           originalText: tweet.text || "",
