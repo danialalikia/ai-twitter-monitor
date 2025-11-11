@@ -462,3 +462,21 @@
 - [x] کوچک کردن دکمه‌های header (size="sm")
 - [x] مخفی کردن text دکمه‌ها در موبایل (فقط آیکون)
 - [x] تست responsive در سایزهای مختلف
+
+## رفع مشکل Execute Now و Scheduler
+- [ ] بررسی دکمه "اجرا الان" در ScheduledPosts.tsx
+- [ ] بررسی اتصال به executeNow procedure
+- [ ] بررسی لاگ سرور برای scheduler در زمان 14:04
+- [ ] رفع مشکل و تست دکمه اجرا الان
+- [ ] رفع مشکل scheduler خودکار
+- [ ] تست کامل با زمان واقعی
+
+## رفع مشکل Execute Now و Scheduler (✅ COMPLETED)
+- [x] بررسی دکمه اجرا الان در UI - کد درست بود
+- [x] بررسی لاگ سرور برای scheduler - timezone mismatch پیدا شد
+- [x] رفع مشکل timezone با moment-timezone
+- [x] Sync scheduler با ابتدای دقیقه (ثانیه 00)
+- [x] تست manual execution (executeNow) - 10 توییت ارسال شد ✅
+- [x] تست automatic execution - scheduler در 14:12 اجرا شد ✅
+- [x] اضافه کردن toast notifications برای پیشرفت
+- [x] به‌روزرسانی UI برای نمایش تعداد توییت‌های ارسال شده

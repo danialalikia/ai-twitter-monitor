@@ -48,14 +48,17 @@ export default function ScheduledPosts() {
   });
   
   const executeNowMutation = trpc.scheduled.executeNow.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log(`[Frontend] executeNow success:`, data);
-      toast.success("در حال اجرا...");
+      toast.success(
+        data.message || `${data.sentCount} توییت ارسال شد`,
+        { id: `execute-${variables.id}` }
+      );
       refetch();
     },
-    onError: (error) => {
+    onError: (error, variables) => {
       console.error(`[Frontend] executeNow error:`, error);
-      toast.error(`خطا: ${error.message}`);
+      toast.error(`خطا: ${error.message}`, { id: `execute-${variables.id}` });
     },
   });
   
@@ -108,6 +111,7 @@ export default function ScheduledPosts() {
     console.log(`[Frontend] handleExecuteNow called with id: ${id}`);
     if (confirm("آیا می‌خواهید این زمانبندی را الان اجرا کنید؟")) {
       console.log(`[Frontend] Calling executeNowMutation.mutate...`);
+      toast.loading("در حال ارسال توییت‌ها...", { id: `execute-${id}` });
       executeNowMutation.mutate({ id });
     }
   };

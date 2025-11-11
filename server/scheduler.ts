@@ -224,13 +224,25 @@ export async function checkAndExecuteSchedules() {
 export function startScheduler() {
   console.log('[Scheduler] Starting background scheduler...');
   
-  // Run immediately on start
-  checkAndExecuteSchedules();
+  // Calculate delay to sync with the start of next minute
+  const now = new Date();
+  const secondsUntilNextMinute = 60 - now.getSeconds();
+  const msUntilNextMinute = secondsUntilNextMinute * 1000 - now.getMilliseconds();
   
-  // Then run every minute
-  setInterval(() => {
+  console.log(`[Scheduler] Will sync with next minute in ${secondsUntilNextMinute} seconds...`);
+  
+  // Wait until the start of next minute, then start checking every minute
+  setTimeout(() => {
+    console.log('[Scheduler] Synced! Starting minute-by-minute checks...');
+    
+    // Run immediately at the start of minute
     checkAndExecuteSchedules();
-  }, 60 * 1000); // Every 60 seconds
+    
+    // Then run every minute at the start of minute
+    setInterval(() => {
+      checkAndExecuteSchedules();
+    }, 60 * 1000); // Every 60 seconds
+  }, msUntilNextMinute);
   
   console.log('[Scheduler] Background scheduler started');
 }
