@@ -455,7 +455,7 @@ export const appRouter = router({
             return { success: false, error: "Telegram bot token not configured" };
           }
 
-          const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
+          const miniAppUrl = process.env.VITE_APP_URL || "https://aitwittermonitor-2uqaxb8d.manus.space";
 
           // Handle /start or /app commands
           if (text === "/start" || text === "/app") {
@@ -865,7 +865,7 @@ ${tweet.text}
         }
 
         // Get Mini App URL from environment
-        const miniAppUrl = process.env.VITE_APP_URL || "https://3000-iydbtns1aq333ef13jid0-ddc4418f.manusvm.computer";
+        const miniAppUrl = process.env.VITE_APP_URL || "https://aitwittermonitor-2uqaxb8d.manus.space";
 
         // Set bot commands and menu button
         await setTelegramBotCommands(settings.telegramBotToken, miniAppUrl);

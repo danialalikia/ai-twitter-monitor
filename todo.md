@@ -213,3 +213,9 @@
 - [ ] تست Mini App از گوشی و شناسایی redirect URI صحیح
 - [ ] اضافه redirect URIs صحیح به Google Console
 - [ ] تست نهایی Google OAuth login در Mini App
+
+# Mini App Production URL
+
+- [x] تغییر miniAppUrl در routers.ts به production URL
+- [ ] تست Setup Bot با production URL
+- [ ] تست باز شدن Mini App از تلگرام با production URL
