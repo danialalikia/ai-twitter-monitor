@@ -426,3 +426,10 @@
 - [x] شناسایی فایل‌های کپی نشده از پروژه قبلی
 - [x] کپی کردن تنظیمات responsive از پروژه قبلی
 - [x] تست و رفع مشکل عرض‌ها
+
+## رفع تفاوت‌های Spacing و Sizing
+- [ ] مقایسه Dashboard.tsx قبلی و فعلی
+- [ ] مقایسه TweetCard.tsx قبلی و فعلی
+- [ ] کپی دقیق button sizes و spacing از پروژه قبلی
+- [ ] کپی دقیق card padding و margins از پروژه قبلی
+- [ ] تست responsive بودن
