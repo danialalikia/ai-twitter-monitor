@@ -82,3 +82,13 @@
 - [x] UI فیلترهای پیشرفته جستجو قبلاً در ScheduledPostDialog وجود دارد
 - [ ] تست و تایید: فقط توییت‌های جدید ارسال شوند
 - [ ] تست و تایید: تعداد دقیق postsPerRun ارسال شود
+
+## اضافه کردن پارامترهای پیشرفته جستجو به Schedule
+- [x] پیدا کردن کامپوننت Advanced Search Parameters از Dashboard (AdvancedFetchDialog)
+- [x] اضافه کردن به ScheduledPostDialog (جایگزین تب فیلترهای ساده)
+- [x] اضافه کردن تمام فیلدهای پیشرفته به scheduledPosts schema
+- [x] اجرای db:push برای اعمال تغییرات schema
+- [x] به‌روزرسانی FetchFilters interface برای فیلدهای جدید
+- [x] به‌روزرسانی fetchTweetsFromApify برای استفاده از فیلترهای جدید
+- [x] به‌روزرسانی scheduler.ts برای ارسال تمام فیلترها به actor
+- [ ] تست و تایید: فیلترهای پیشرفته در schedule کار کنند

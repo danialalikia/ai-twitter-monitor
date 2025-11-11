@@ -60,13 +60,32 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       maxItems,
       settings.apifyToken,
       {
+        // Search filters
+        queryType: schedule.queryType || "Latest",
+        lang: schedule.lang || "en",
+        
+        // Engagement filters
         minLikes: schedule.minLikes || undefined,
         minRetweets: schedule.minRetweets || undefined,
+        minReplies: schedule.minReplies || undefined,
         minViews: schedule.minViews || undefined,
+        
+        // Content filters
         hasImages: schedule.hasImages ? true : false,
         hasVideos: schedule.hasVideos ? true : false,
-        hasLinks: false,
-        verifiedOnly: false,
+        hasLinks: schedule.hasLinks ? true : false,
+        verifiedOnly: schedule.verifiedOnly ? true : false,
+        safeOnly: schedule.safeOnly ? true : false,
+        
+        // Time filters
+        since: schedule.since || undefined,
+        until: schedule.until || undefined,
+        withinTime: schedule.withinTime || undefined,
+        
+        // User filters
+        fromUser: schedule.fromUser || undefined,
+        toUser: schedule.toUser || undefined,
+        mentionUser: schedule.mentionUser || undefined,
       }
     );
     

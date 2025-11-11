@@ -327,13 +327,31 @@ export const scheduledPosts = mysqlTable("scheduledPosts", {
   // Search filters (same as Advanced Fetch)
   keywords: text("keywords"), // comma-separated
   queryType: varchar("queryType", { length: 20 }).default("Latest"),
+  maxItems: int("maxItems").default(200),
+  lang: varchar("lang", { length: 10 }).default("en"),
+  
+  // Engagement filters
   minLikes: int("minLikes"),
   minRetweets: int("minRetweets"),
+  minReplies: int("minReplies"),
   minViews: int("minViews"),
+  
+  // Content filters
   hasImages: int("hasImages").default(0),
   hasVideos: int("hasVideos").default(0),
   hasLinks: int("hasLinks").default(0),
   verifiedOnly: int("verifiedOnly").default(0),
+  safeOnly: int("safeOnly").default(0),
+  
+  // Time filters (Advanced)
+  since: varchar("since", { length: 64 }),
+  until: varchar("until", { length: 64 }),
+  withinTime: varchar("withinTime", { length: 20 }),
+  
+  // User filters (Advanced)
+  fromUser: varchar("fromUser", { length: 255 }),
+  toUser: varchar("toUser", { length: 255 }),
+  mentionUser: varchar("mentionUser", { length: 255 }),
   
   // Telegram settings
   useAiTranslation: int("useAiTranslation").default(0).notNull(),

@@ -140,13 +140,32 @@ export interface NormalizedTweet {
 }
 
 export interface FetchFilters {
+  // Content filters
   hasImages?: boolean;
   hasVideos?: boolean;
   hasLinks?: boolean;
   verifiedOnly?: boolean;
+  safeOnly?: boolean;
+  
+  // Engagement filters
   minLikes?: number;
   minRetweets?: number;
+  minReplies?: number;
   minViews?: number;
+  
+  // Search filters
+  queryType?: string;
+  lang?: string;
+  
+  // Time filters
+  since?: string;
+  until?: string;
+  withinTime?: string;
+  
+  // User filters
+  fromUser?: string;
+  toUser?: string;
+  mentionUser?: string;
 }
 
 /**
@@ -163,8 +182,8 @@ export async function fetchTweetsFromApify(
   const input: any = {
     twitterContent: keywords.join(" OR "), // Search query with OR operator
     maxItems,
-    queryType: "Latest", // Latest tweets first
-    lang: "en", // English tweets only
+    queryType: filters?.queryType || "Latest",
+    lang: filters?.lang || "en",
   };
 
   // Add advanced filters if provided
@@ -175,15 +194,29 @@ export async function fetchTweetsFromApify(
     if (filters.hasLinks) input["filter:links"] = true;
     if (filters.hasImages || filters.hasVideos) input["filter:media"] = true;
     if (filters.verifiedOnly) input["filter:blue_verified"] = true;
+    if (filters.safeOnly) input["filter:safe"] = true;
+    
+    // Time filters
+    if (filters.since) input.since = filters.since;
+    if (filters.until) input.until = filters.until;
+    if (filters.withinTime) input.withinTime = filters.withinTime;
+    
+    // User filters - add to search query
+    const userFilters: string[] = [];
+    if (filters.fromUser) userFilters.push(`from:${filters.fromUser}`);
+    if (filters.toUser) userFilters.push(`to:${filters.toUser}`);
+    if (filters.mentionUser) userFilters.push(`@${filters.mentionUser}`);
     
     // Engagement filters - add to search query
     const engagementFilters: string[] = [];
     if (filters.minLikes) engagementFilters.push(`min_faves:${filters.minLikes}`);
     if (filters.minRetweets) engagementFilters.push(`min_retweets:${filters.minRetweets}`);
-    if (filters.minViews) engagementFilters.push(`min_replies:0`);
+    if (filters.minReplies) engagementFilters.push(`min_replies:${filters.minReplies}`);
     
-    if (engagementFilters.length > 0) {
-      input.twitterContent = `(${keywords.join(" OR ")}) ${engagementFilters.join(" ")}`;
+    // Combine all search query filters
+    const allSearchFilters = [...userFilters, ...engagementFilters];
+    if (allSearchFilters.length > 0) {
+      input.twitterContent = `(${keywords.join(" OR ")}) ${allSearchFilters.join(" ")}`;
     }
   }
 
