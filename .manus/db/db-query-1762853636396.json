@@ -1,0 +1,18 @@
+{
+  "query": "SELECT includeStats, includeLink, includeAuthor, includeDate, includeMedia, telegramTemplate FROM settings LIMIT 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2HR4kjNebWRqJ69.root --database 2UQqxb8DT7xYmYE7i9MjmL --execute SELECT includeStats, includeLink, includeAuthor, includeDate, includeMedia, telegramTemplate FROM settings LIMIT 1",
+  "rows": [
+    {
+      "includeStats": "1",
+      "includeLink": "1",
+      "includeAuthor": "1",
+      "includeDate": "0",
+      "includeMedia": "1",
+      "telegramTemplate": "{{ rewritten_text }}"
+    }
+  ],
+  "messages": [],
+  "stdout": "includeStats\tincludeLink\tincludeAuthor\tincludeDate\tincludeMedia\ttelegramTemplate\n1\t1\t1\t0\t1\t{{ rewritten_text }}\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

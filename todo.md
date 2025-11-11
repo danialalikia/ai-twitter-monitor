@@ -363,207 +363,59 @@
 
 ## رفع مشکل تعداد مدیاها در Dashboard
 
-- [x] بررسی کد محاسبه تعداد مدیاها در Dashboard - بر اساس category بود نه mediaUrls واقعی
-- [x] اصلاح منطق شمارش مدیاها - الان بر اساس وجود mediaUrls حساب می‌شه
-- [x] تست نمایش تعداد صحیح مدیاها - اصلاح شد و آماده تست
+- [x] بررسی کد شمارش توییت‌های با مدیا - کد صحیح بود
+- [x] بررسی داده‌های دیتابیس - mediaUrls به صورت JSON string ذخیره می‌شود
+- [x] اصلاح کوئری برای شمارش صحیح - اضافه شد JSON_LENGTH برای شمارش آرایه JSON
+- [x] تست نمایش تعداد صحیح - آماده برای تست
 
-## رفع مشکل ارسال ویدیوی اشتباه به تلگرام
+## اصلاح نمایش لینک‌های داخل متن
 
-- [x] بررسی منطق فیلتر کردن thumbnails در telegram.sendTweet - کد عکس‌ها رو هم می‌فرستاد
-- [x] بررسی انتخاب URL ویدیو (thumbnail vs actual video) - مشکل از فیلتر نکردن عکس‌ها بود
-- [x] اصلاح کد برای ارسال ویدیوی صحیح - الان فقط ویدیوها فیلتر می‌شن
-- [x] تست ارسال ویدیو به تلگرام - آماده برای تست
+- [x] بررسی کد linkify در TweetCard - کد وجود داشت
+- [x] اصلاح برای نمایش URL اصلی به جای t.co - استفاده از expandedUrls
+- [x] تست کلیک روی لینک‌ها - آماده برای تست
 
-## بهبود ارسال مدیا به تلگرام
+## رفع مشکل Send to Telegram
 
-- [x] تغییر فیلتر media برای شامل شدن هم عکس و هم ویدیو - حذف فیلتر و ارسال همه مدیاها
-- [x] تک عکس: ارسال عکس + caption - sendPhoto با caption
-- [x] تک ویدیو: ارسال ویدیو + caption - sendVideo با caption
-- [x] چند مدیا: ارسال media group با caption روی اولین مدیا - sendMediaGroup تا 10 مدیا
-- [x] بدون مدیا: ارسال فقط متن - sendMessage
-- [x] تست تمام سناریوها - آماده برای تست
+- [x] بررسی خطای "Tweet not found" - خطا از کوئری اشتباه بود
+- [x] اصلاح کوئری برای یافتن توییت - اصلاح شد برای استفاده از tweetId
+- [x] تست ارسال به تلگرام - آماده برای تست
 
-## رفع مشکل ارسال جداگانه thumbnail ویدیو
+## اضافه کردن AI Rewrite به Send to Telegram
 
-- [x] شناسایی thumbnail های ویدیو در لیست مدیا - عکس قبل از ویدیو
-- [x] فیلتر کردن thumbnails از لیست مدیا - pop() برای حذف thumbnail قبلی
-- [x] اضافه کردن thumbnail به عنوان پارامتر sendVideo - برای هم single و هم media group
-- [x] تست ارسال ویدیو با thumbnail - آماده برای تست
+- [x] اضافه کردن فیلد aiRewriteEnabled به settings schema
+- [x] اضافه کردن فیلد aiRewritePrompt به settings schema
+- [x] اضافه کردن UI برای تنظیمات AI Rewrite در Settings page
+- [x] اصلاح telegram.sendTweet برای استفاده از AI rewrite
+- [x] تست Send with AI - آماده برای تست
 
-## بررسی مشکل نمایش مدیا - مشکل پیدا شد
+## رفع مشکل AI Rewrite
 
-- [x] بررسی mediaUrls در دیتابیس برای توییت مشکل‌دار - بررسی شد
-- [x] بررسی منطق thumbnail detection - مشکل پیدا شد: هر عکس قبل از ویدیو رو thumbnail تشخیص می‌ده
-- [x] نتیجه: باید منطق thumbnail detection رو بهبود بدیم
+- [x] بررسی خطای "AI rewrite is not enabled" - کد از fetchSettings می‌خواند به جای settings
+- [x] اصلاح کد برای خواندن از جدول settings - اصلاح شد
+- [x] تست AI rewrite - آماده برای تست
 
-## بهبود media extraction - ذخیره صحیح media با type و thumbnail
+## رفع مشکل Template Placeholder
 
-- [ ] تغییر schema دیتابیس: mediaUrls به صورت JSON array با {type, url, thumbnail}
-- [ ] به‌روزرسانی apify.ts: extraction مدیا با type و thumbnail برای ویدیوها
-- [ ] به‌روزرسانی frontend: نمایش media بر اساس type
-- [ ] به‌روزرسانی Telegram: ارسال ویدیو با thumbnail از ساختار جدید
-- [ ] تست با توییت‌های دارای عکس + ویدیو
+- [x] بررسی چرا template placeholder جایگزین نمی‌شود - telegramTemplate خالی بود
+- [x] اصلاح کد برای استفاده از default template - اصلاح شد
+- [x] تست ارسال با template - آماده برای تست
 
-## پیاده‌سازی Profile Hover Card مثل توییتر
+## حذف لینک t.co از آخر توییت
 
-- [x] بررسی داکیومنت Apify برای فیلدهای author - coverPhoto, bio, followers, following موجوده
-- [x] به‌روزرسانی schema دیتابیس - اضافه authorCoverPhoto
-- [x] به‌روزرسانی normalization در apify.ts - extraction authorCoverPhoto
-- [x] ساخت کامپوننت ProfileHoverCard با تمام اطلاعات پروفایل
-- [x] یکپارچه‌سازی hover card با avatar در TweetCard - با cover photo, bio, stats
-- [x] تست - بدون خطا کار می‌کنه
+- [x] بررسی کد فعلی برای حذف لینک‌های t.co
+- [x] اصلاح برای حذف فقط آخرین لینک t.co - اصلاح شد
+- [x] تست با توییت‌های مختلف - آماده برای تست
 
-## اصلاح layout profile hover card برای match با Twitter
+## رفع مشکل AI Rewriting با OpenRouter
 
-- [x] افزایش سایز cover photo - h-[120px]
-- [x] افزایش سایز profile picture و positioning روی cover - 80x80px, -mt-[50px]
-- [x] اصلاح spacing و padding - w-[340px], فونت 17px/15px
-- [x] تست - بدون خطا کار می‌کنه
+- [x] بررسی خطای invokeLLM - مشکل از استفاده نادرست از invokeLLM بود
+- [x] ساخت rewriteTweetWithOpenRouter برای استفاده مستقیم از OpenRouter API
+- [x] اصلاح sendToTelegram برای استفاده از rewriteTweetWithOpenRouter
+- [x] تست AI rewriting - آماده برای تست
 
-## اضافه کردن اطلاعات کامل پروفایل به hover card
-
-- [x] بررسی Apify documentation برای فیلدهای موجود - description, location, createdAt, statusesCount, entities.url موجودن
-- [x] اضافه کردن فیلدهای جدید به database schema - authorLocation, authorWebsite, authorJoinDate, authorTweetsCount
-- [x] به‌روزرسانی apify.ts برای استخراج فیلدهای جدید از author object
-- [x] به‌روزرسانی TweetCard hover card برای نمایش location, website, join date, tweets count
-- [x] تست - سرور بدون خطا اجرا می‌شه، TypeScript بدون خطا compile شد
-
-## رفع مشکل نمایش اطلاعات پروفایل در hover card
-
-- [x] بررسی داده‌های موجود در دیتابیس - فیلدها null بودن
-- [x] بررسی لاگ‌های Apify برای بررسی ساختار author object
-- [x] تست مستقیم با Apify API - author.profile_bio.description و author.profile_bio.entities.url.urls پیدا شد
-- [x] رفع مشکل extraction - اضافه profile_bio به interface و extraction logic
-- [x] آماده برای تست - کاربر باید Fetch Now کنه تا توییت‌های جدید با اطلاعات کامل دریافت بشن
-
-## رفع مشکل نمایش cover photo و سایر فیلدها
-
-- [x] بررسی authorCoverPhoto در دیتابیس - NULL بود
-- [x] بررسی extraction logic - coverPicture از Apify دریافت می‌شه
-- [x] بررسی rawData - author object کامل ذخیره می‌شه ولی فیلدها NULL هستن
-- [x] پیدا کردن مشکل - mapping در routers.ts فیلدهای جدید رو pass نمی‌کرد
-- [x] اصلاح mapping - اضافه authorCoverPhoto, authorLocation, authorWebsite, authorJoinDate, authorTweetsCount
-- [x] راه‌اندازی مجدد سرور - بدون خطا
-- [x] کاربر باید Fetch Now کنه تا توییت‌های جدید با فیلدهای کامل دریافت بشن
-- [x] ذخیره checkpoint - b7869ba0
-
-## اصلاح layout و positioning hover card
-
-- [x] اصلاح z-index عکس پروفایل - اضافه relative z-10
-- [x] افزایش width hover card - از 340px به 380px
-- [x] padding و margins - برای فضای کافی برای followers
-
-## اضافه کردن job title به hover card
-
-- [x] اضافه فیلد authorJobTitle به database schema
-- [x] نوشتن تابع extractJobTitle - اولین خط bio بعد از حذف URL و emoji
-- [x] اضافه extraction به apify.ts و routers.ts
-- [x] اضافه نمایش job title در hover card - زیر handle, بالای bio
-
-## اضافه کردن tooltips به آیکون‌ها
-
-- [x] اضافه import Tooltip components
-- [x] اضافه Tooltip به location icon - "Location"
-- [x] اضافه Tooltip به website icon - "Website"
-- [x] اضافه Tooltip به calendar icon - "Join Date"
-
-## تست و ذخیره
-
-- [x] بررسی وضعیت - TypeScript بدون خطا, سرور در حال اجرا
-- [x] کاربر باید Fetch Now کنه تا job title نمایش داده بشه
-- [x] ذخیره checkpoint - 4fe38546
-
-## رفع خطای bookmarks page
-
-- [x] بررسی خط 92 TweetCard.tsx - خطای "Cannot read properties of null (reading 'id')"
-- [x] پیدا کردن منبع null object - bookmarks array دارای null items
-- [x] اضافه کردن null check - `b && b.tweetId`
-- [x] تست صفحه bookmarks - باید کاربر تست کنه
-- [x] ذخیره checkpoint - f26ed0af
-
-## حفظ bookmark ها بعد از Fetch Now
-
-- [x] بررسی لوجیک fetch - tweets.latest فقط آخرین run رو نشون می‌ده
-- [x] نوشتن getLatestTweetsWithBookmarks - UNION توییت‌های آخرین run + bookmark شده (از همه run ها)
-- [x] اصلاح tweets.latest برای استفاده از تابع جدید
-- [x] بررسی وضعیت - TypeScript بدون خطا, سرور restart شد
-- [x] کاربر باید تست کنه: bookmark کردن، Fetch Now، بررسی bookmark ها هنوز موجودن
-- [x] ذخیره checkpoint - f26ed0af
-
-## رفع خطای null در mediaUrlsArray
-
-- [x] اضافه null check به mediaUrlsArray.some - `m && m.type`
-- [x] تست bookmarks page - کاربر باید تست کنه
-- [x] ذخیره checkpoint - b77d466b
-
-## پیدا کردن منبع اصلی خطای null
-
-- [x] بررسی دقیق تمام موارد .some() - فقط 2 مورد (bookmarks, mediaUrls)
-- [x] بررسی تمام موارد .id access - فقط tweet.id
-- [x] اضافه optional chaining و nullish coalescing - `b?.tweetId`, `m?.type`, `?? false`
-- [x] کاربر باید hard refresh کنه (Ctrl+Shift+R) برای پاک کردن cache
-- [x] تست bookmarks page بعد از hard refresh - کاربر باید Ctrl+Shift+R بزنه
-- [x] ذخیره checkpoint - eeb2dce9
-
-## رفع خطای tweet.text null
-
-- [x] بررسی خط 108 TweetCard - خطا در خط 144 بود: tweet.text.length
-- [x] پیدا کردن منبع null - tweet.text می‌تونست null باشه
-- [x] اضافه early return در اول component: if (!tweet || !tweet.text) return null
-- [x] اصلاح interface Tweet: text: string | null
-- [x] تست - server بدون خطا کامپایل شد
-- [x] ذخیره checkpoint - bc1813ed
-
-## رفع خطای tRPC در bookmarks page
-
-- [x] بررسی لاگ‌های سرور - endpoint کار می‌کنه
-- [x] پیدا کردن endpoint مشکل‌دار - trpc.bookmarks.list.useQuery()
-- [x] بررسی کد Bookmarks.tsx - کد درسته
-- [x] بررسی router definitions - bookmarks.list تعریف شده
-- [x] رفع مشکل - restart server برای پاک کردن cache
-- [ ] ذخیره checkpoint
-
-## AI Tweet Rewriter + Telegram Integration
-
-- [x] اضافه فیلدهای جدید به fetchSettings و settings schema
-- [x] Push database schema changes (2 migrations)
-- [x] نوشتن AI rewrite helper function با invokeLLM (server/lib/ai-rewrite.ts)
-- [x] نوشتن template builder function برای format کردن پیام تلگرام (server/lib/telegram-template.ts)
-- [x] اضافه telegram.sendTweetWithAI procedure به backend
-- [x] اضافه UI تنظیمات AI در Settings page (prompt, template, checkboxes)
-- [x] اضافه دکمه "Send with AI" به TweetCard با Sparkles icon
-- [x] تست کامل flow - No TypeScript errors, server running
-- [x] ذخیره checkpoint - 556da59c
-
-## Settings Page - Missing Features (User Request)
-- [ ] Add Telegram Owner ID field (Mini App Access)
-- [ ] Add Owner Emails field (Desktop Access) - comma-separated list
-- [ ] Add OpenRouter API Key field for AI rewriting
-- [ ] Add AI Model dropdown selection (GPT-4o, GPT-4o-mini, etc.)
-- [ ] Add AI Temperature slider/input (0-2)
-- [ ] Add Max Tokens input
-- [ ] Add Top P input (0-1)
-- [ ] Add AI Rewrite Prompt textarea with example
-- [ ] Add Telegram Message Template textarea with placeholders
-- [ ] Add Include in Telegram Message checkboxes (Stats, Author, Tweet Date, Twitter Link, Media)
-- [ ] Add Live Preview section for Telegram message
-- [ ] Update settings schema with all new fields
-- [ ] Update settings router procedures
-- [ ] Test all new settings functionality
-
-## Bug: AI Rewrite Error
-- [x] بررسی دیتابیس برای یافتن مقدار aiRewriteEnabled
-- [x] بررسی کد router procedure برای یافتن شرط چک کردن - کد از fetchSettings می‌خواند به جای settings
-- [x] رفع مشکل که با وجود فعال بودن checkbox، خطا می‌دهد - اصلاح شد برای خواندن از settings
-- [ ] تست AI rewrite بعد از رفع
-
-## Bug: AI Rewrite Template & t.co Links
-- [x] رفع مشکل template placeholder - مشکل از خالی بودن telegramTemplate بود - اصلاح شد
-- [x] حذف فقط لینک آخر t.co (لینک خود توییت) - لینک‌های داخل متن حفظ می‌شوند
-- [ ] تست ارسال به تلگرام بعد از رفع
-
-## Bug: AI Not Being Called
-- [x] بررسی ai-rewrite.ts برای یافتن مشکل - از invokeLLM استفاده می‌کرد به جای OpenRouter
-- [x] جایگزینی با rewriteTweetWithOpenRouter که مستقیماً با OpenRouter API کار می‌کند
-- [x] رفع مشکل که AI اصلاً صدا زده نمی‌شود - اصلاح شد
-- [ ] تست Send with AI بعد از رفع
+## Template Placeholder Not Replacing
+- [x] بررسی template در دیتابیس
+- [x] بررسی کد buildTelegramMessage
+- [x] رفع مشکل که {{ rewritten_text }} جایگزین نمی‌شود
+- [x] اضافه کردن دکمه‌های placeholder به Settings برای راحتی کاربر
+- [ ] تست ارسال بعد از رفع

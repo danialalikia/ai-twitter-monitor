@@ -726,14 +726,16 @@ ${tweet.text}
           viewCount: tweet.viewCount,
           tweetUrl: tweet.url,
           createdAt: tweet.createdAt,
-          includeStats: Boolean(settings.includeStats),
-          includeLink: Boolean(settings.includeLink),
-          includeAuthor: Boolean(settings.includeAuthor),
-          includeDate: Boolean(settings.includeDate),
+          // Use default value of 1 (true) if NULL
+          includeStats: settings.includeStats !== null ? Boolean(settings.includeStats) : true,
+          includeLink: settings.includeLink !== null ? Boolean(settings.includeLink) : true,
+          includeAuthor: settings.includeAuthor !== null ? Boolean(settings.includeAuthor) : true,
+          includeDate: settings.includeDate !== null ? Boolean(settings.includeDate) : false,
         });
 
-        // Prepare media if includeMedia is enabled
-        const mediaArray = settings.includeMedia ? (tweet.mediaUrls || []) : [];
+        // Prepare media if includeMedia is enabled (default true if NULL)
+        const includeMedia = settings.includeMedia !== null ? Boolean(settings.includeMedia) : true;
+        const mediaArray = includeMedia ? (tweet.mediaUrls || []) : [];
         const actualMedia = mediaArray.map(media => ({
           url: media.url,
           isVideo: media.type === 'video',

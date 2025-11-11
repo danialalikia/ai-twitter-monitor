@@ -460,8 +460,47 @@ export default function Settings() {
                       onChange={(e) => setFormData({ ...formData, telegramTemplate: e.target.value })}
                       rows={6}
                     />
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {[
+                        { label: 'Rewritten Text', value: '{{rewritten_text}}' },
+                        { label: 'Original Text', value: '{{original_text}}' },
+                        { label: 'Author', value: '{{author}}' },
+                        { label: 'Handle', value: '{{handle}}' },
+                        { label: 'Likes', value: '{{likes}}' },
+                        { label: 'Retweets', value: '{{retweets}}' },
+                        { label: 'Comments', value: '{{comments}}' },
+                        { label: 'Views', value: '{{views}}' },
+                        { label: 'Link', value: '{{link}}' },
+                        { label: 'Date', value: '{{date}}' },
+                      ].map((placeholder) => (
+                        <Button
+                          key={placeholder.value}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            const textarea = document.getElementById('telegramTemplate') as HTMLTextAreaElement;
+                            if (textarea) {
+                              const start = textarea.selectionStart;
+                              const end = textarea.selectionEnd;
+                              const currentValue = formData.telegramTemplate;
+                              const newValue = currentValue.substring(0, start) + placeholder.value + currentValue.substring(end);
+                              setFormData({ ...formData, telegramTemplate: newValue });
+                              // Set cursor position after inserted placeholder
+                              setTimeout(() => {
+                                textarea.focus();
+                                textarea.setSelectionRange(start + placeholder.value.length, start + placeholder.value.length);
+                              }, 0);
+                            }
+                          }}
+                        >
+                          {placeholder.label}
+                        </Button>
+                      ))}
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      Available placeholders: {'{{'} rewritten_text {'}}'},  {'{{'} original_text {'}}'},  {'{{'} author {'}}'},  {'{{'} handle {'}}'},  {'{{'} likes {'}}'},  {'{{'} retweets {'}}'},  {'{{'} comments {'}}'},  {'{{'} views {'}}'},  {'{{'} link {'}}'},  {'{{'} date {'}}'}
+                      Click buttons above to insert placeholders at cursor position
                     </p>
                   </div>
 
