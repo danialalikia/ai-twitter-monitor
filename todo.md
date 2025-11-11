@@ -162,3 +162,9 @@
 - [x] بازنویسی tryAcquireScheduleLock و releaseScheduleLock
 - [x] اضافه cleanupOldLocks برای پاک کردن lock های قدیمی
 - [ ] تست: تایید فقط 1 actor در هر trigger
+
+## رفع مشکل Tooltip - مرحله 8
+- [x] بررسی کد tooltip روی عکس پروفایل: کد تغییری نکرده
+- [x] مقایسه با پروژه قبلی: کد دقیقاً یکسان است
+- [x] اضافه max-height برای محدود کردن ارتفاع HoverCard
+- [ ] تست: بررسی tooltip بعد از hard refresh

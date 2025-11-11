@@ -211,7 +211,7 @@ export default function TweetCard({ tweet, onRemove }: TweetCardProps) {
                   />
                 </button>
               </HoverCardTrigger>
-              <HoverCardContent className="w-[380px] p-0 overflow-hidden" side="bottom" align="start">
+              <HoverCardContent className="w-[380px] p-0 overflow-hidden max-h-[500px]" side="bottom" align="start">
                 {/* Cover Photo */}
                 <div className="h-[120px] bg-gradient-to-r from-blue-500 to-purple-500 relative">
                   {tweet.authorCoverPhoto && (
