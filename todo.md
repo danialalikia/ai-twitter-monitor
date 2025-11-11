@@ -154,3 +154,11 @@
 - [x] ساخت tryAcquireScheduleLock و releaseScheduleLock
 - [x] تغییر scheduler برای استفاده از atomic lock
 - [ ] تست: تایید فقط 1 actor در هر trigger
+
+## رفع مشکل Atomic Lock - مرحله 7
+- [x] بررسی چرا UPDATE atomic lock کار نکرد: Drizzle execute() syntax error
+- [x] راه حل جدید: ساخت جدول execution_locks با UNIQUE(scheduleId, executionMinute)
+- [x] استفاده از INSERT + UNIQUE constraint برای atomic lock
+- [x] بازنویسی tryAcquireScheduleLock و releaseScheduleLock
+- [x] اضافه cleanupOldLocks برای پاک کردن lock های قدیمی
+- [ ] تست: تایید فقط 1 actor در هر trigger

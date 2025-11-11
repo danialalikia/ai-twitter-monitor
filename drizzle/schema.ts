@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, bigint, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, bigint, json, unique } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -369,6 +369,23 @@ export const scheduledPosts = mysqlTable("scheduledPosts", {
 
 export type ScheduledPost = typeof scheduledPosts.$inferSelect;
 export type InsertScheduledPost = typeof scheduledPosts.$inferInsert;
+
+/**
+ * Execution locks table - prevents concurrent execution of same schedule
+ * Uses UNIQUE constraint for atomic lock acquisition
+ */
+export const executionLocks = mysqlTable("execution_locks", {
+  id: int("id").autoincrement().primaryKey(),
+  scheduleId: int("scheduleId").notNull(),
+  executionMinute: varchar("executionMinute", { length: 5 }).notNull(), // "HH:MM"
+  acquiredAt: timestamp("acquiredAt").defaultNow().notNull(),
+}, (table) => ({
+  // UNIQUE constraint ensures only one lock per schedule per minute
+  uniqueLock: unique().on(table.scheduleId, table.executionMinute),
+}));
+
+export type ExecutionLock = typeof executionLocks.$inferSelect;
+export type InsertExecutionLock = typeof executionLocks.$inferInsert;
 
 /**
  * Sent posts tracking table - stores sent tweets with full data for history

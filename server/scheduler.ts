@@ -1,5 +1,5 @@
 import * as db from './db';
-import { tryAcquireScheduleLock, releaseScheduleLock } from './db-atomic-lock';
+import { tryAcquireScheduleLock, releaseScheduleLock, cleanupOldLocks } from './db-atomic-lock';
 import moment from 'moment-timezone';
 
 /**
@@ -365,9 +365,11 @@ export async function checkAndExecuteSchedules() {
         const currentTime = now.format('HH:mm');
         const currentDay = now.day(); // 0 = Sunday, 6 = Saturday
         
-        // Clear database lock if minute has changed (allow execution in new minute)
+        // Clear old locks if minute has changed
         if (schedule.lastExecutionMinute && schedule.lastExecutionMinute !== currentTime) {
-          await releaseScheduleLock(schedule.id);
+          await releaseScheduleLock(schedule.id, schedule.lastExecutionMinute);
+          // Also update scheduledPosts to clear lastExecutionMinute
+          await db.updateScheduledPost(schedule.id, { lastExecutionMinute: null });
         }
         
         // Parse schedule times
@@ -413,7 +415,12 @@ export async function checkAndExecuteSchedules() {
             return; // Skip this schedule - another process is handling it
           }
           
-          // Lock acquired successfully - proceed with execution
+          // Lock acquired successfully - update scheduledPosts
+          await db.updateScheduledPost(schedule.id, {
+            lastExecutionMinute: currentTime,
+            lastRunAt: new Date(),
+          });
+          
           console.log(`[Scheduler] Executing schedule ${schedule.id} at ${currentTime}`);
           
           try {
@@ -456,6 +463,8 @@ export function startScheduler() {
     // Then run every minute at the start of minute
     setInterval(() => {
       checkAndExecuteSchedules();
+      // Cleanup old locks every minute
+      cleanupOldLocks().catch((err: any) => console.error('[Scheduler] Cleanup error:', err));
     }, 60 * 1000); // Every 60 seconds
   }, msUntilNextMinute);
   
