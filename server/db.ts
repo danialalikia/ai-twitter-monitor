@@ -435,6 +435,20 @@ export async function insertSentPost(data: InsertSentPost) {
   await db.insert(sentPosts).values(data);
 }
 
+export async function getLastSentPost(scheduleId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db
+    .select()
+    .from(sentPosts)
+    .where(eq(sentPosts.scheduleId, scheduleId))
+    .orderBy(desc(sentPosts.sentAt))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function getSentPostsInWindow(scheduleId: number, hours: number) {
   const db = await getDb();
   if (!db) return [];

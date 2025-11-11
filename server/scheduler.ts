@@ -187,8 +187,28 @@ export async function checkAndExecuteSchedules() {
         
         // Check if current time matches any schedule time
         console.log(`[Scheduler] Schedule ${schedule.id} (${timezone}): times=${JSON.stringify(scheduleTimes)}, current=${currentTime}`);
+        
+        // Check if already executed today for this time slot
+        const lastExecution = await db.getLastSentPost(schedule.id);
+        const lastExecutionTime = lastExecution ? moment(lastExecution.sentAt).tz(timezone) : null;
+        
         const shouldExecute = scheduleTimes.some((time: string) => {
-          if (time !== currentTime) return false;
+          // Parse schedule time
+          const [scheduleHour, scheduleMinute] = time.split(':').map(Number);
+          const scheduleTime = now.clone().hour(scheduleHour).minute(scheduleMinute).second(0);
+          
+          // Check if current time is past schedule time
+          if (!now.isSameOrAfter(scheduleTime)) return false;
+          
+          // Check if already executed for this time slot today
+          if (lastExecutionTime && lastExecutionTime.isSame(now, 'day')) {
+            const lastHour = lastExecutionTime.hour();
+            const lastMinute = lastExecutionTime.minute();
+            if (lastHour === scheduleHour && lastMinute === scheduleMinute) {
+              console.log(`[Scheduler] Schedule ${schedule.id} already executed at ${time} today`);
+              return false;
+            }
+          }
           
           // For weekly schedules, check day of week
           if (schedule.scheduleType === 'weekly') {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,22 @@ import { ScheduledPostDialog } from "@/components/ScheduledPostDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TweetCard from "@/components/TweetCard";
 import moment from "moment-jalaali";
+import "moment-timezone";
 
 export default function ScheduledPosts() {
   const { user, loading: authLoading } = useAuth();
   const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("schedules");
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // Update current time every second for countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
   
   const { data: schedules, isLoading, refetch } = trpc.scheduled.list.useQuery(undefined, {
     enabled: !!user,
@@ -141,6 +151,49 @@ export default function ScheduledPosts() {
     }
   };
   
+  const getNextRunTime = (schedule: any) => {
+    if (!schedule.scheduleTimes || !Array.isArray(schedule.scheduleTimes) || schedule.scheduleTimes.length === 0) {
+      return null;
+    }
+    
+    const timezone = schedule.timezone || 'Asia/Tehran';
+    const now = moment().tz(timezone);
+    const times = schedule.scheduleTimes.map((time: string) => {
+      const [hour, minute] = time.split(':').map(Number);
+      const scheduleTime = now.clone().hour(hour).minute(minute).second(0);
+      if (scheduleTime.isBefore(now)) {
+        scheduleTime.add(1, 'day');
+      }
+      return scheduleTime;
+    });
+    
+    times.sort((a: moment.Moment, b: moment.Moment) => a.valueOf() - b.valueOf());
+    return times[0];
+  };
+  
+  const getCountdown = (schedule: any) => {
+    const nextRun = getNextRunTime(schedule);
+    if (!nextRun) return "—";
+    
+    const now = moment().tz(schedule.timezone || 'Asia/Tehran');
+    const diff = nextRun.diff(now);
+    
+    if (diff < 0) return "در حال اجرا...";
+    
+    const duration = moment.duration(diff);
+    const hours = Math.floor(duration.asHours());
+    const minutes = duration.minutes();
+    const seconds = duration.seconds();
+    
+    if (hours > 0) {
+      return `${hours} ساعت و ${minutes} دقیقه`;
+    } else if (minutes > 0) {
+      return `${minutes} دقیقه و ${seconds} ثانیه`;
+    } else {
+      return `${seconds} ثانیه`;
+    }
+  };
+  
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
@@ -250,8 +303,12 @@ export default function ScheduledPosts() {
                 <div className="flex justify-between items-center pt-4 border-t">
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div>آخرین اجرا: {formatJalaliDate(schedule.lastRunAt)}</div>
-                    <div>اجرای بعدی: {formatJalaliDate(schedule.nextRunAt)}</div>
-                    <div>تعداد ارسال شده: {schedule.totalSent}</div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      اجرای بعدی: 
+                      <span className="font-medium text-primary">{getCountdown(schedule)}</span>
+                    </div>
+                    <div>تعداد ارسال شده: {schedule.totalSent || 0}</div>
                   </div>
                   
                   <div className="flex gap-2">
