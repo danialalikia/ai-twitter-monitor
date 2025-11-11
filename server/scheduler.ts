@@ -26,35 +26,73 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       throw new Error("Telegram not configured");
     }
     
-    // Get all tweets from database
-    const allTweets = await db.getLatestTweetsWithBookmarks(userId);
+    // STEP 1: Run Apify actor to fetch fresh tweets before sending
+    console.log(`[Scheduler] Triggering Apify actor to fetch fresh tweets...`);
+    
+    if (!settings.apifyToken) {
+      throw new Error('Apify token not configured');
+    }
+    
+    // Get fetch settings to know what keywords to search
+    const fetchSettingsList = await db.getFetchSettings(userId);
+    if (fetchSettingsList.length === 0) {
+      throw new Error('No fetch settings found');
+    }
+    
+    // Use the first fetch setting
+    const activeFetchSetting = fetchSettingsList[0];
+    const keywordsStr = activeFetchSetting.twitterContent || activeFetchSetting.searchTerms || '';
+    const keywords = keywordsStr.split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0);
+    
+    if (keywords.length === 0) {
+      throw new Error('No keywords configured in fetch settings');
+    }
+    
+    // Use schedule's postsPerRun as maxItems for actor
+    const maxItems = (schedule.postsPerRun || 10) * 3; // Fetch 3x to have buffer for filtering
+    
+    console.log(`[Scheduler] Running actor with keywords: ${keywords.join(', ')}, maxItems: ${maxItems}`);
+    
+    // Import and run the Apify actor
+    const { fetchTweetsFromApify } = await import('./apify');
+    const freshTweets = await fetchTweetsFromApify(
+      keywords,
+      maxItems,
+      settings.apifyToken,
+      {
+        minLikes: schedule.minLikes || undefined,
+        minRetweets: schedule.minRetweets || undefined,
+        minViews: schedule.minViews || undefined,
+        hasImages: schedule.hasImages ? true : false,
+        hasVideos: schedule.hasVideos ? true : false,
+        hasLinks: false,
+        verifiedOnly: false,
+      }
+    );
+    
+    console.log(`[Scheduler] Actor completed, received ${freshTweets.length} fresh tweets`);
+    
+    if (freshTweets.length === 0) {
+      console.log(`[Scheduler] No fresh tweets available for schedule ${scheduleId}`);
+      return { success: false, message: "No fresh tweets available" };
+    }
+    
+    // STEP 2: Use ONLY fresh tweets from actor (don't query database)
+    const allTweets = freshTweets;
     if (!allTweets || allTweets.length === 0) {
       console.log(`[Scheduler] No tweets available for schedule ${scheduleId}`);
       return { success: false, message: "No tweets available" };
     }
     
-    // Filter tweets based on schedule settings
+    // Filter tweets based on schedule settings (already filtered by actor, but apply additional filters)
     let filteredTweets = allTweets.filter((tweet: any) => {
-      // Filter by keywords if specified
+      // Filter by keywords if specified (additional keyword filter)
       if (schedule.keywords) {
         const keywords = schedule.keywords.split(',').map(k => k.trim().toLowerCase());
         const tweetText = tweet.text.toLowerCase();
         const hasKeyword = keywords.some(keyword => tweetText.includes(keyword));
         if (!hasKeyword) return false;
       }
-      
-      // Filter by engagement
-      if (schedule.minLikes && tweet.likeCount < schedule.minLikes) return false;
-      if (schedule.minRetweets && tweet.retweetCount < schedule.minRetweets) return false;
-      if (schedule.minViews && tweet.viewCount < schedule.minViews) return false;
-      
-      // Filter by content type
-      const mediaUrls = typeof tweet.mediaUrls === 'string' 
-        ? JSON.parse(tweet.mediaUrls || '[]') 
-        : (tweet.mediaUrls || []);
-      
-      if (schedule.hasImages && mediaUrls.length === 0) return false;
-      if (schedule.hasVideos && mediaUrls.length === 0) return false;
       
       return true;
     });
@@ -82,8 +120,11 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
       filteredTweets = filteredTweets.filter((tweet: any) => !recentSentIds.includes(tweet.tweetId));
     }
     
-    // Limit to postsPerRun
-    const tweetsToSend = filteredTweets.slice(0, schedule.postsPerRun || 5);
+    // Limit to EXACTLY postsPerRun
+    const postsPerRun = schedule.postsPerRun || 10;
+    const tweetsToSend = filteredTweets.slice(0, postsPerRun);
+    
+    console.log(`[Scheduler] Will send exactly ${tweetsToSend.length} tweets (postsPerRun: ${postsPerRun})`);
     
     if (tweetsToSend.length === 0) {
       console.log(`[Scheduler] No tweets match criteria for schedule ${scheduleId}`);
@@ -146,6 +187,42 @@ export async function executeScheduledPost(scheduleId: number, userId: number) {
     }
     
     console.log(`[Scheduler] Successfully sent ${sentCount}/${tweetsToSend.length} tweets for schedule ${scheduleId}`);
+    
+    // Save fresh tweets to database for history (optional)
+    try {
+      const runId = await db.createRun({
+        userId: userId,
+        status: 'success',
+        totalItems: freshTweets.length,
+        triggeredBy: 'scheduled',
+        startedAt: new Date(),
+        completedAt: new Date(),
+      });
+      
+      const tweetsToInsert = freshTweets.map(tweet => ({
+        runId: runId,
+        tweetId: tweet.tweetId,
+        url: tweet.url,
+        text: tweet.text,
+        authorHandle: tweet.authorHandle,
+        authorName: tweet.authorName,
+        authorVerified: tweet.authorVerified,
+        likeCount: tweet.likeCount,
+        retweetCount: tweet.retweetCount,
+        replyCount: tweet.replyCount,
+        viewCount: tweet.viewCount,
+        mediaUrls: tweet.mediaUrls,
+        createdAt: tweet.createdAt,
+        fetchedAt: new Date(),
+        trendScore: tweet.trendScore,
+        userId: userId,
+      }));
+      
+      await db.insertTweets(tweetsToInsert);
+      console.log(`[Scheduler] Saved ${tweetsToInsert.length} fresh tweets to database for history`);
+    } catch (dbError) {
+      console.error(`[Scheduler] Failed to save tweets to database:`, dbError);
+    }
     
     return {
       success: true,

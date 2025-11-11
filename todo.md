@@ -66,3 +66,19 @@
 1. **Auto-refresh بعد از اجرا:** وقتی scheduler اجرا می‌شود، لیست scheduled posts و history خودکار refresh شود
 2. **Progress indicator:** نوار پیشرفت برای نمایش درصد توییت‌های ارسال شده در هر اجرا
 3. **Pause/Resume Schedule:** دکمه موقت متوقف کردن schedule
+
+## اضافه کردن Actor Run قبل از Scheduled Send
+- [x] بررسی executeScheduledPost برای actor trigger
+- [x] اضافه کردن actor run قبل از ارسال توییت‌ها
+- [x] صبر تا actor تمام شود و توییت‌های جدید fetch شوند
+- [x] تست و تایید اجرای actor در لاگ Apify
+- [ ] تست ارسال توییت‌های جدید به تلگرام
+
+## رفع مشکلات Scheduler
+- [x] تغییر منطق: فقط از توییت‌های جدید actor استفاده کند (نه از دیتابیس)
+- [x] رفع مشکل تعداد ارسال (باید دقیقاً postsPerRun باشد)
+- [x] فیلدهای engagement (minLikes, minRetweets, minViews) قبلاً در scheduledPosts schema وجود دارد
+- [x] فیلدهای content type (hasImages, hasVideos) قبلاً در scheduledPosts schema وجود دارد
+- [x] UI فیلترهای پیشرفته جستجو قبلاً در ScheduledPostDialog وجود دارد
+- [ ] تست و تایید: فقط توییت‌های جدید ارسال شوند
+- [ ] تست و تایید: تعداد دقیق postsPerRun ارسال شود
