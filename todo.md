@@ -70,3 +70,7 @@
 1. **Email Notification:** ارسال ایمیل به owner هنگام ارسال خودکار
 2. **Analytics Dashboard:** آمار scheduled posts
 3. **Retry Mechanism:** تلاش مجدد برای ارسال‌های ناموفق
+
+## رفع خطای moment-timezone
+- [ ] رفع خطای moment(...).tz is not a function
+- [ ] تست countdown timer در UI

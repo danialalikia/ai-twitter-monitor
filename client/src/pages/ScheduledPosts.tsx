@@ -10,8 +10,8 @@ import { toast } from "sonner";
 import { ScheduledPostDialog } from "@/components/ScheduledPostDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TweetCard from "@/components/TweetCard";
-import moment from "moment-jalaali";
-import "moment-timezone";
+import moment from "moment-timezone";
+import "moment-jalaali";
 
 export default function ScheduledPosts() {
   const { user, loading: authLoading } = useAuth();
