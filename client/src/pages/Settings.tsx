@@ -126,7 +126,7 @@ export default function Settings() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container mx-auto px-4 py-3 md:py-4 flex items-center justify-between">
+        <div className="container mx-auto py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button asChild variant="ghost" size="sm">
               <Link href="/">
@@ -139,7 +139,7 @@ export default function Settings() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
+      <main className="container mx-auto py-8 max-w-3xl">
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
           {/* API Tokens */}
           <Card>
