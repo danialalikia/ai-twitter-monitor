@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import Bookmarks from "./pages/Bookmarks";
 import ScheduledPosts from "./pages/ScheduledPosts";
 import TelegramLogin from "./pages/TelegramLogin";
+import DebugInfo from "./pages/DebugInfo";
 import { useTelegram } from "./contexts/TelegramContext";
 import { useAuth } from "./_core/hooks/useAuth";
 
@@ -28,6 +29,7 @@ function Router() {
       <Route path={"/bookmarks"} component={Bookmarks} />
       <Route path={"/scheduled"} component={ScheduledPosts} />
       <Route path={"/telegram-login"} component={TelegramLogin} />
+      <Route path={"/debug"} component={DebugInfo} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

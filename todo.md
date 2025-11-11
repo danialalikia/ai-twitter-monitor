@@ -199,3 +199,17 @@
 - [ ] اضافه دکمه Mini App به Telegram bot
 - [ ] تست: login با owner email → دسترسی کامل
 - [ ] تست: login با non-owner email → Access Denied
+
+# Telegram Mini App Fixes
+
+- [x] رفع مشکل دکمه inline: تبدیل url به web_app در sendWelcomeMessage
+- [ ] اضافه Menu Button همیشگی به bot با setChatMenuButton
+- [ ] تست باز شدن Mini App از دکمه inline
+- [ ] تست باز شدن Mini App از Menu Button
+
+# Google OAuth Redirect URI Fix
+
+- [x] ساخت صفحه debug برای نمایش current URL و redirect URI
+- [ ] تست Mini App از گوشی و شناسایی redirect URI صحیح
+- [ ] اضافه redirect URIs صحیح به Google Console
+- [ ] تست نهایی Google OAuth login در Mini App

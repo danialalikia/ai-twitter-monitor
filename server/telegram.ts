@@ -14,6 +14,9 @@ interface TelegramMessage {
       text: string;
       callback_data?: string;
       url?: string;
+      web_app?: {
+        url: string;
+      };
     }>>;
   };
 }
@@ -416,7 +419,9 @@ Click the button below to get started:`;
         [
           {
             text: "📊 Open Dashboard",
-            url: miniAppUrl,
+            web_app: {
+              url: miniAppUrl,
+            },
           },
         ],
       ],
