@@ -188,3 +188,14 @@
 - [x] بررسی contentMix: مشکل در filter - استفاده از t.mediaType به جای mediaUrls[0].type
 - [x] رفع retry mechanism: استفاده از nextTweetIndex برای track کردن fallback tweets
 - [x] رفع contentMix logic: تغییر filter به mediaUrls[0].type === 'photo'|'video'
+
+## پیاده‌سازی Telegram Mini App - مرحله 12
+- [ ] اضافه ownerEmails به settings schema
+- [ ] ساخت UI برای Owner Emails management در Settings
+- [ ] تبدیل auth system: multi-owner با shared data
+- [ ] پیاده‌سازی Google OAuth endpoint
+- [ ] اضافه Telegram WebApp SDK
+- [ ] تشخیص Mini App mode و استفاده از Google auth
+- [ ] اضافه دکمه Mini App به Telegram bot
+- [ ] تست: login با owner email → دسترسی کامل
+- [ ] تست: login با non-owner email → Access Denied

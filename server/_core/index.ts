@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { initiateGoogleOAuth, handleGoogleOAuthCallback } from "../google-oauth";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +36,10 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // Google OAuth for Telegram Mini App
+  app.get("/api/auth/google", initiateGoogleOAuth);
+  app.get("/api/auth/google/callback", handleGoogleOAuthCallback);
   // tRPC API
   app.use(
     "/api/trpc",

@@ -24,13 +24,13 @@ export const appRouter = router({
 
   settings: router({
     get: protectedProcedure.query(async ({ ctx }) => {
-      const settings = await db.getSettings(ctx.user.id);
+      const settings = await db.getSettings(ctx.userId);
       
       // Return default values if no settings exist
       if (!settings) {
         return {
           id: 0,
-          userId: ctx.user.id,
+          userId: ctx.userId,
           apifyToken: null,
           telegramBotToken: null,
           telegramChatId: null,
@@ -79,7 +79,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         const settings = await db.upsertSettings({
-          userId: ctx.user.id,
+          userId: ctx.userId,
           ...input,
         });
         return settings;
@@ -100,7 +100,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         // Get user settings
-        const settings = await db.getSettings(ctx.user.id);
+        const settings = await db.getSettings(ctx.userId);
         
         if (!settings) {
           throw new Error("Please configure your settings first");
@@ -111,12 +111,12 @@ export const appRouter = router({
         }
 
         // Delete all previous tweets before fetching new ones
-        await db.deleteAllTweets(ctx.user.id);
+        await db.deleteAllTweets(ctx.userId);
         console.log('[Fetch] Deleted all previous tweets');
 
         // Create a new run record
         const runId = await db.createRun({
-          userId: ctx.user.id,
+          userId: ctx.userId,
           status: "running",
           triggeredBy: input.triggeredBy,
           startedAt: new Date(),
@@ -148,7 +148,7 @@ export const appRouter = router({
           const uniqueTweets = rawTweets;
 
           // Get ignored tweets
-          const ignoredList = await db.getIgnoredTweets(ctx.user.id);
+          const ignoredList = await db.getIgnoredTweets(ctx.userId);
           const ignoredIds = new Set(ignoredList.map(i => i.tweetId));
 
           // Filter out ignored tweets
@@ -260,7 +260,7 @@ export const appRouter = router({
 
   runs: router({
     latest: protectedProcedure.query(async ({ ctx }) => {
-      return db.getLatestRuns(ctx.user.id, 10);
+      return db.getLatestRuns(ctx.userId, 10);
     }),
 
     get: protectedProcedure
@@ -268,7 +268,7 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const run = await db.getRun(input.runId);
         
-        if (!run || run.userId !== ctx.user.id) {
+        if (!run || run.userId !== ctx.userId) {
           throw new Error("Run not found");
         }
 
@@ -282,7 +282,7 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const run = await db.getRun(input.runId);
         
-        if (!run || run.userId !== ctx.user.id) {
+        if (!run || run.userId !== ctx.userId) {
           throw new Error("Run not found");
         }
 
@@ -290,13 +290,13 @@ export const appRouter = router({
       }),
 
     latest: protectedProcedure.query(async ({ ctx }) => {
-      return db.getLatestTweetsWithBookmarks(ctx.user.id);
+      return db.getLatestTweetsWithBookmarks(ctx.userId);
     }),
 
     topLatest: protectedProcedure
       .input(z.object({ limit: z.number().default(10) }))
       .query(async ({ ctx, input }) => {
-        const latestRun = await db.getLatestSuccessfulRun(ctx.user.id);
+        const latestRun = await db.getLatestSuccessfulRun(ctx.userId);
         
         if (!latestRun) {
           return [];
@@ -307,14 +307,14 @@ export const appRouter = router({
 
     deleteAll: protectedProcedure
       .mutation(async ({ ctx }) => {
-        await db.deleteAllTweets(ctx.user.id);
+        await db.deleteAllTweets(ctx.userId);
         return { success: true };
       }),
   }),
 
   ignored: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      return db.getIgnoredTweets(ctx.user.id);
+      return db.getIgnoredTweets(ctx.userId);
     }),
 
     add: protectedProcedure
@@ -324,7 +324,7 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         await db.addIgnoredTweet({
-          userId: ctx.user.id,
+          userId: ctx.userId,
           tweetId: input.tweetId,
           tweetUrl: input.tweetUrl,
         });
@@ -334,14 +334,14 @@ export const appRouter = router({
     remove: protectedProcedure
       .input(z.object({ tweetId: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        await db.removeIgnoredTweet(ctx.user.id, input.tweetId);
+        await db.removeIgnoredTweet(ctx.userId, input.tweetId);
         return { success: true };
       }),
   }),
 
   fetchSettings: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getFetchSettings(ctx.user.id);
+      return await db.getFetchSettings(ctx.userId);
     }),
 
     save: protectedProcedure
@@ -369,7 +369,7 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const id = await db.saveFetchSetting({
           ...input,
-          userId: ctx.user.id,
+          userId: ctx.userId,
         });
         return { success: true, id };
       }),
@@ -377,14 +377,14 @@ export const appRouter = router({
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await db.deleteFetchSetting(input.id, ctx.user.id);
+        await db.deleteFetchSetting(input.id, ctx.userId);
         return { success: true };
       }),
   }),
 
   bookmarks: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getBookmarks(ctx.user.id);
+      return await db.getBookmarks(ctx.userId);
     }),
 
     add: protectedProcedure
@@ -393,33 +393,33 @@ export const appRouter = router({
         note: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const id = await db.addBookmark(ctx.user.id, input.tweetId, input.note);
+        const id = await db.addBookmark(ctx.userId, input.tweetId, input.note);
         return { success: true, id };
       }),
 
     remove: protectedProcedure
       .input(z.object({ tweetId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        await db.removeBookmark(ctx.user.id, input.tweetId);
+        await db.removeBookmark(ctx.userId, input.tweetId);
         return { success: true };
       }),
 
     isBookmarked: protectedProcedure
       .input(z.object({ tweetId: z.number() }))
       .query(async ({ ctx, input }) => {
-        return await db.isBookmarked(ctx.user.id, input.tweetId);
+        return await db.isBookmarked(ctx.userId, input.tweetId);
       }),
 
     toggle: protectedProcedure
       .input(z.object({ tweetId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const isBookmarked = await db.isBookmarked(ctx.user.id, input.tweetId);
+        const isBookmarked = await db.isBookmarked(ctx.userId, input.tweetId);
         
         if (isBookmarked) {
-          await db.removeBookmark(ctx.user.id, input.tweetId);
+          await db.removeBookmark(ctx.userId, input.tweetId);
           return { success: true, bookmarked: false };
         } else {
-          await db.addBookmark(ctx.user.id, input.tweetId);
+          await db.addBookmark(ctx.userId, input.tweetId);
           return { success: true, bookmarked: true };
         }
       }),
@@ -478,7 +478,7 @@ export const appRouter = router({
         runId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const settings = await db.getSettings(ctx.user.id);
+        const settings = await db.getSettings(ctx.userId);
         
         if (!settings || !settings.telegramBotToken || !settings.telegramChatId) {
           throw new Error("Telegram bot token and chat ID are required");
@@ -489,7 +489,7 @@ export const appRouter = router({
         if (input.runId) {
           run = await db.getRun(input.runId);
         } else {
-          run = await db.getLatestSuccessfulRun(ctx.user.id);
+          run = await db.getLatestSuccessfulRun(ctx.userId);
         }
 
         if (!run) {
@@ -532,7 +532,7 @@ export const appRouter = router({
         tweetId: z.number(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const settings = await db.getSettings(ctx.user.id);
+        const settings = await db.getSettings(ctx.userId);
         
         if (!settings || !settings.telegramBotToken || !settings.telegramChatId) {
           throw new Error("Telegram bot token and chat ID are required");
@@ -648,7 +648,7 @@ ${tweet.text}
         tweetId: z.number(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const settings = await db.getSettings(ctx.user.id);
+        const settings = await db.getSettings(ctx.userId);
         
         if (!settings || !settings.telegramBotToken || !settings.telegramChatId) {
           throw new Error("Telegram bot token and chat ID are required");
@@ -824,7 +824,7 @@ ${tweet.text}
 
   scheduled: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      return await db.getScheduledPosts(ctx.user.id);
+      return await db.getScheduledPosts(ctx.userId);
     }),
 
     get: protectedProcedure
@@ -862,7 +862,7 @@ ${tweet.text}
       }))
       .mutation(async ({ ctx, input }) => {
         await db.createScheduledPost({
-          userId: ctx.user.id,
+          userId: ctx.userId,
           name: input.name,
           scheduleType: input.scheduleType,
           scheduleTimes: input.scheduleTimes,
@@ -952,7 +952,7 @@ ${tweet.text}
       .mutation(async ({ ctx, input }) => {
         console.log(`[executeNow] Manual execution requested for schedule ${input.id}`);
         const { executeScheduledPost } = await import('./scheduler');
-        const result = await executeScheduledPost(input.id, ctx.user.id);
+        const result = await executeScheduledPost(input.id, ctx.userId);
         return result;
       }),
 
@@ -971,7 +971,7 @@ ${tweet.text}
 
     clearAllHistory: protectedProcedure
       .mutation(async ({ ctx }) => {
-        await db.clearAllSentTweets(ctx.user.id);
+        await db.clearAllSentTweets(ctx.userId);
         return { success: true };
       }),
   }),

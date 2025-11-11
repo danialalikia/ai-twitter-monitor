@@ -10,10 +10,16 @@ const t = initTRPC.context<TrpcContext>().create({
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+/**
+ * Protected procedure with multi-owner support
+ * - Requires authentication
+ * - Automatically maps owner emails to shared data via effectiveUserId
+ * - All owners see the same data (schedules, settings, bookmarks, history)
+ */
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
 
-  if (!ctx.user) {
+  if (!ctx.user || ctx.effectiveUserId === null) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
@@ -21,6 +27,8 @@ const requireUser = t.middleware(async opts => {
     ctx: {
       ...ctx,
       user: ctx.user,
+      // Override userId with effectiveUserId for shared data access
+      userId: ctx.effectiveUserId,
     },
   });
 });
