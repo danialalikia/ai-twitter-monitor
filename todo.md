@@ -168,3 +168,11 @@
 - [x] مقایسه با پروژه قبلی: کد دقیقاً یکسان است
 - [x] اضافه max-height برای محدود کردن ارتفاع HoverCard
 - [ ] تست: بررسی tooltip بعد از hard refresh
+
+## رفع مشکل Atomic Lock - مرحله 9 (گزارش کاربر)
+- [x] بررسی جدول execution_locks: خالی است (چون lock اصلاً اجرا نمی‌شود)
+- [x] بررسی لاگ‌های lock: هیچ لاگی وجود ندارد
+- [x] تشخیص علت: startScheduler چندین بار فراخوانی می‌شود (بعد از هر hot reload)
+- [x] رفع مشکل: اضافه singleton pattern به startScheduler
+- [x] اضافه stopScheduler برای cleanup
+- [ ] تست: تایید فقط 1 actor در زمان‌بندی

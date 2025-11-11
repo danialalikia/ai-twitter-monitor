@@ -439,11 +439,21 @@ export async function checkAndExecuteSchedules() {
   }
 }
 
+// Singleton: Track if scheduler is already running
+let schedulerRunning = false;
+let schedulerInterval: NodeJS.Timeout | null = null;
+
 /**
  * Start the scheduler background job
  * Checks for due schedules every minute
  */
 export function startScheduler() {
+  if (schedulerRunning) {
+    console.log('[Scheduler] Already running, skipping duplicate start');
+    return;
+  }
+  
+  schedulerRunning = true;
   console.log('[Scheduler] Starting background scheduler...');
   
   // Calculate delay to sync with the start of next minute
@@ -461,7 +471,7 @@ export function startScheduler() {
     checkAndExecuteSchedules();
     
     // Then run every minute at the start of minute
-    setInterval(() => {
+    schedulerInterval = setInterval(() => {
       checkAndExecuteSchedules();
       // Cleanup old locks every minute
       cleanupOldLocks().catch((err: any) => console.error('[Scheduler] Cleanup error:', err));
@@ -469,4 +479,17 @@ export function startScheduler() {
   }, msUntilNextMinute);
   
   console.log('[Scheduler] Background scheduler started');
+}
+
+
+/**
+ * Stop the scheduler (for cleanup or testing)
+ */
+export function stopScheduler() {
+  if (schedulerInterval) {
+    clearInterval(schedulerInterval);
+    schedulerInterval = null;
+  }
+  schedulerRunning = false;
+  console.log('[Scheduler] Stopped');
 }
