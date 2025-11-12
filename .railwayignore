@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Development
+.git/
+.github/
+*.log
+*.md
+!README.md
+
+# Build artifacts
+dist/
+.vite/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migration files (already in repo)
+database-backup-*.json
+export-database.mjs
+import-database.mjs
+extract-settings.mjs
+settings-template.json
+MIGRATION_*.md
+IMPORT_PROMPT_FINAL.md
+
+# Uploads
+upload/
