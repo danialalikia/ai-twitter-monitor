@@ -9,37 +9,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-      
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-      
-            - name: Deploy to Railway
+      - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-        run: |
-          railway up -d
-
-      
-      - name: Set Environment Variables
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway variables --set NODE_ENV=production
-          railway variables --set DATABASE_URL="${{ secrets.DATABASE_URL }}"
-          railway variables --set APIFY_TOKEN="${{ secrets.APIFY_TOKEN }}"
-          railway variables --set TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
-          railway variables --set TELEGRAM_CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
-          railway variables --set OPENROUTER_API_KEY="${{ secrets.OPENROUTER_API_KEY }}"
-          railway variables --set JWT_SECRET="${{ secrets.JWT_SECRET }}"
-          railway variables --set VITE_APP_TITLE="AI Twitter Monitor"
+        run: railway up --service=${{ secrets.RAILWAY_SERVICE_ID }}
