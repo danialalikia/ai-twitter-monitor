@@ -26,7 +26,8 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --detach
+          railway up --service ${{ secrets.RAILWAY_PROJECT_ID }} --detach
+
       
       - name: Set Environment Variables
         if: github.event_name == 'workflow_dispatch'
