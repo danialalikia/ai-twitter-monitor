@@ -105,3 +105,9 @@ temp/
 *.db
 *.sqlite
 *.sqlite3
+
+# Sensitive files
+create-github-repo.sh
+database-backup-*.json
+import-settings.ts
+.manus/
