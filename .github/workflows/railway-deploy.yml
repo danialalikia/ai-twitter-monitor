@@ -26,7 +26,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }} --environment production
+          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
           railway up --detach
       
       - name: Set Environment Variables
